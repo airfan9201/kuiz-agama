@@ -2,6 +2,7 @@
 # TETAPAN REDIS / VERCEL DATABASE (AUTO-DETECT KEY)
 # =========================================================
 import urllib.parse
+import redis
 import os
 import json
 import requests
@@ -383,39 +384,31 @@ QUIZ_DATA = {
         {"id": 50, "soalan": "Tempoh keharusan solat Jamak dan Qasar bagi musafir yang menetap di sesuatu tempat (tidak berniat tinggal tetap) ialah...", "pilihan": ["3 Hari 3 Malam (tidak termasuk hari sampai & keluar)", "1 Hari", "10 Hari", "Seminggu"], "jawapan": 0}        
     ]
 }
-# =========================================================
-# TETAPAN REDIS / VERCEL DATABASE (AUTO-DETECT KEY)
-# =========================================================
 
-# 1. Semak jika Vercel sediakan REST API URL & Token
-REST_API_URL = (
-    os.environ.get("KV_REST_API_URL") or 
-    os.environ.get("kuizdb_KV_REST_API_URL") or 
-    os.environ.get("KUIZDB_KV_REST_API_URL") or 
-    os.environ.get("REDIS_REST_API_URL")
+# =========================================================
+# TETAPAN REDIS CLOUD CONNECTION
+# =========================================================
+REDIS_URL = (
+    os.environ.get("kuizdb_REDIS_URL") or 
+    os.environ.get("REDIS_URL")
 )
 
-REST_API_TOKEN = (
-    os.environ.get("KV_REST_API_TOKEN") or 
-    os.environ.get("kuizdb_KV_REST_API_TOKEN") or 
-    os.environ.get("KUIZDB_KV_REST_API_TOKEN") or 
-    os.environ.get("REDIS_REST_API_TOKEN")
-)
-
-# 2. Jika Vercel guna REDIS_URL biasa (Format redis://default:password@host:port)
-REDIS_URL = os.environ.get("kuizdb_REDIS_URL") or os.environ.get("REDIS_URL")
-
-if not REST_API_URL and REDIS_URL:
+r_db = None
+if REDIS_URL:
     try:
-        # Auto-convert REDIS_URL kepada HTTP REST API URL (Upstash)
-        parsed = urllib.parse.urlparse(REDIS_URL)
-        host = parsed.hostname
-        password = parsed.password
-        if host and password:
-            REST_API_URL = f"https://{host}"
-            REST_API_TOKEN = password
+        # Jika pangkalan data memerlukan SSL, tukar redis:// kepada rediss://
+        if REDIS_URL.startswith("redis://") and not REDIS_URL.startswith("rediss://"):
+            # Sesetengah persekitaran Cloud perlukan ssl_cert_reqs=None
+            r_db = redis.Redis.from_url(REDIS_URL, decode_responses=True, ssl_cert_reqs=None)
+        else:
+            r_db = redis.Redis.from_url(REDIS_URL, decode_responses=True)
+            
+        # Uji sambungan sebenar (Ping)
+        r_db.ping()
+        print("Berjaya bersambung ke Redis Cloud!")
     except Exception as e:
-        print("Parsing REDIS_URL Error:", e)
+        print("Redis Connection Error:", e)
+        r_db = None
 
 LOCAL_LEADERBOARD = []
 
@@ -453,44 +446,28 @@ def handle_leaderboard():
             "kategori": kategori
         }
 
-        # 1. Simpan ke Upstash Redis / Vercel KV jika kunci ada
-        if REST_API_URL and REST_API_TOKEN:
+        # 1. Simpan ke Redis Cloud jika connection wujud
+        if r_db:
             try:
                 composite_score = (skor * 1000) + (1000 - masa)
-                
-                # Gunakan Format REST API Upstash yang betul (POST dengan Body/Payload)
-                url = f"{REST_API_URL}/zadd/{LEADERBOARD_KEY}"
-                headers = {
-                    "Authorization": f"Bearer {REST_API_TOKEN}",
-                    "Content-Type": "application/json"
-                }
-                # Hantar score dan member (JSON string)
-                payload = [composite_score, json.dumps(entry)]
-                
-                response = requests.post(url, headers=headers, json=payload)
-                
-                if response.status_code == 200:
-                    return jsonify({"status": "success", "message": "Skor berjaya disimpan ke Redis!"})
-                else:
-                    print("Redis Error Status:", response.text)
+                # ZADD masukkan ke Sorted Set
+                r_db.zadd(LEADERBOARD_KEY, {json.dumps(entry): composite_score})
+                return jsonify({"status": "success", "message": "Skor berjaya disimpan ke Redis Cloud!"})
             except Exception as e:
                 print("Redis Save Error:", e)
 
-        # 2. Fallback: Simpan sementara di Local Memory jika REST API belum bersedia
+        # 2. Fallback jika Redis belum sedia
         LOCAL_LEADERBOARD.append(entry)
         LOCAL_LEADERBOARD = sorted(LOCAL_LEADERBOARD, key=lambda x: (-x['skor'], x['masa']))[:10]
 
         return jsonify({"status": "success", "message": "Skor disimpan secara tempatan sementara!"})
 
     else:
-        # GET: Ambil dari Redis jika ada
-        if REST_API_URL and REST_API_TOKEN:
+        # GET: Ambil 10 teratas dari Redis Cloud
+        if r_db:
             try:
-                url = f"{REST_API_URL}/zrevrange/{LEADERBOARD_KEY}/0/9"
-                headers = {"Authorization": f"Bearer {REST_API_TOKEN}"}
-                res = requests.get(url, headers=headers).json()
-                raw_list = res.get("result", [])
-                
+                # ZREVRANGE ambil ranking tertinggi ke terendah
+                raw_list = r_db.zrevrange(LEADERBOARD_KEY, 0, 9)
                 db_data = []
                 for item in raw_list:
                     try:
@@ -502,7 +479,7 @@ def handle_leaderboard():
             except Exception as e:
                 print("Redis Fetch Error:", e)
 
-        # Pulangkan data simpanan tempatan jika Redis belum berfungsi
+        # Pulangkan data tempatan jika Redis tiada data
         return jsonify({"data": LOCAL_LEADERBOARD})
 
 if __name__ == '__main__':
