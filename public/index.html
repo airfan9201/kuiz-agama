@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuiz Agama Islam</title>
+    <style>
+        :root {
+            --primary-color: #0d9488;
+            --primary-hover: #0f766e;
+            --bg-color: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --whatsapp-color: #25d366;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 650px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .btn-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        button.option-btn {
+            background-color: #f3f4f6;
+            color: var(--text-color);
+            border: 2px solid #e5e7eb;
+            text-align: left;
+        }
+
+        button.option-btn:hover {
+            background-color: #e5e7eb;
+            color: var(--text-color);
+        }
+
+        .back-btn {
+            background-color: #6b7280;
+            margin-top: 15px;
+        }
+
+        .whatsapp-btn {
+            background-color: var(--whatsapp-color);
+            margin-top: 10px;
+        }
+        .whatsapp-btn:hover {
+            background-color: #1ebd56;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Header & Pemasa */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .timer-box {
+            background-color: #fee2e2;
+            color: var(--danger-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid #fca5a5;
+        }
+
+        .timer-box.warning {
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: left;
+            min-height: 60px;
+        }
+
+        .score-box {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        /* Input Form & Leaderboard UI */
+        .save-score-form {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .save-score-form input {
+            padding: 10px;
+            width: 60%;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-right: 5px;
+        }
+
+        .leaderboard-box {
+            margin-top: 20px;
+            text-align: left;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .leaderboard-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-bottom: 1px dashed #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .rank {
+            font-weight: bold;
+            width: 25px;
+        }
+
+        /* Seksyen Soalan Salah (Review) */
+        .review-section {
+            margin-top: 20px;
+            text-align: left;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .review-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--danger-color);
+            margin-bottom: 8px;
+            border-bottom: 2px solid #fee2e2;
+            padding-bottom: 4px;
+        }
+
+        .review-item {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+
+        .review-question {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #374151;
+        }
+
+        .review-ans {
+            font-size: 0.85rem;
+            margin-top: 3px;
+        }
+
+        .user-wrong { color: var(--danger-color); font-weight: 600; }
+        .correct-right { color: var(--success-color); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Menu Utama -->
+    <div id="main-menu">
+        <h1>Kuiz Agama Islam</h1>
+        <p>Sila pilih kategori soalan (10 soalan rawak):</p>
+        <div class="btn-grid">
+            <button onclick="showSubMenu('rukun')">Rukun</button>
+            <button onclick="loadQuiz('sejarah', '', 'Sejarah Nabi SAW')">Sejarah Nabi SAW</button>
+            <button onclick="loadQuiz('solat_fardu', '', 'Solat Fardu')">Solat Fardu</button>
+        </div>
+
+        <!-- Paparan Leaderboard di Menu Utama -->
+        <div class="leaderboard-box">
+            <div class="leaderboard-title">
+                <span>🏆 Carta Kedudukan Peranti Ini</span>
+                <small style="font-size: 0.75rem; color: #64748b; font-weight: normal;">(10 Teratas)</small>
+            </div>
+            <ol id="main-leaderboard" class="leaderboard-list"></ol>
+        </div>
+    </div>
+
+    <!-- Sub Menu Rukun -->
+    <div id="sub-menu-rukun" class="hidden">
+        <h1>Pilih Kategori Rukun</h1>
+        <div class="btn-grid">
+            <button onclick="loadQuiz('rukun', 'rukun_iman', 'Rukun Iman')">Rukun Iman</button>
+            <button onclick="loadQuiz('rukun', 'rukun_islam', 'Rukun Islam')">Rukun Islam</button>
+            <button onclick="loadQuiz('rukun', 'rukun_solat', 'Rukun Solat')">Rukun Solat</button>
+            <button onclick="loadQuiz('rukun', 'rukun_wuduk', 'Rukun Wuduk')">Rukun Wuduk</button>
+            <button onclick="loadQuiz('rukun', 'rukun_nikah', 'Rukun Nikah')">Rukun Nikah</button>
+        </div>
+        <button class="back-btn" onclick="showMainMenu()">Kembali</button>
+    </div>
+
+    <!-- Skrin Soalan -->
+    <div id="quiz-screen" class="hidden">
+        <div class="quiz-header">
+            <span id="progress">Soalan 1 daripada 10</span>
+            <div id="timer-box" class="timer-box">
+                ⏱️ Masa: <span id="time-left">10</span>s
+            </div>
+        </div>
+        <div class="question-text" id="question"></div>
+        <div class="btn-grid" id="options"></div>
+    </div>
+
+    <!-- Skrin Keputusan -->
+    <div id="result-screen" class="hidden">
+        <h1>Keputusan Kuiz</h1>
+        <div class="score-box" id="score"></div>
+        <p id="time-taken-text" style="color: #64748b; font-size: 0.95rem;"></p>
+
+        <!-- Form Simpan Rekod -->
+        <div class="save-score-form" id="save-form">
+            <p style="font-size: 0.9rem; margin-bottom: 8px; font-weight: 600;">Masukkan nama untuk rekodkan skor:</p>
+            <input type="text" id="player-name" placeholder="Nama anda..." maxlength="15">
+            <button style="padding: 10px 15px;" onclick="saveScore()">Simpan</button>
+        </div>
+
+        <!-- Butang Share WhatsApp -->
+        <button class="whatsapp-btn" onclick="shareToWhatsApp()">💬 Cabar Kawan di WhatsApp</button>
+
+        <!-- Bekas Paparan Soalan Salah -->
+        <div id="review-container" class="review-section hidden">
+            <div class="review-title">⚠️ Semakan Soalan yang Salah:</div>
+            <div id="review-list"></div>
+        </div>
+
+        <button class="back-btn" onclick="showMainMenu()">Ke Menu Utama</button>
+    </div>
+</div>
+
+<script>
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = 10;
+    let totalTimeTaken = 0; // Masa keseluruhan digunakan
+    let currentCategoryName = '';
+    let wrongAnswersHistory = [];
+
+    // Muat turun rekod Leaderboard dari LocalStorage semasa mula
+   /* document.addEventListener("DOMContentLoaded", () => {
+        renderLeaderboard();
+    });
+*/
+
+// Dimuat turun semasa halaman dibuka
+	document.addEventListener("DOMContentLoaded", () => {
+		fetchGlobalLeaderboard();
+	});
+
+// --- FUNGSI LEADERBOARD TERPUSAT (DATABASE SERVER) ---
+	async function fetchGlobalLeaderboard() {
+		const listContainer = document.getElementById('main-leaderboard');
+		try {
+			const res = await fetch('/api/leaderboard');
+			const responseData = await res.json();
+			const leaderboard = responseData.data || [];
+
+			listContainer.innerHTML = '';
+
+			if (leaderboard.length === 0) {
+				listContainer.innerHTML = `<p style="font-size:0.85rem; color:#94a3b8; text-align:center; padding:10px;">Belum ada rekod terpusat tersimpan.</p>`;
+				return;
+			}
+
+			leaderboard.forEach((item, index) => {
+				const li = document.createElement('li');
+				li.className = 'leaderboard-item';
+				
+				let medal = `#${index + 1}`;
+				if (index === 0) medal = '🥇';
+				if (index === 1) medal = '🥈';
+				if (index === 2) medal = '🥉';
+
+				li.innerHTML = `
+					<div>
+						<span class="rank">${medal}</span>
+						<strong>${item.nama}</strong> 
+						<small style="color:#64748b;">(${item.kategori})</small>
+					</div>
+					<div>
+						<strong>${item.skor}/10</strong> 
+						<small style="color:#64748b;">(${item.masa}s)</small>
+					</div>
+				`;
+				listContainer.appendChild(li);
+			});
+		} catch (err) {
+			listContainer.innerHTML = `<p style="font-size:0.85rem; color:#ef4444; text-align:center;">Gagal memuat turun Carta Kedudukan.</p>`;
+		}
+	}
+
+	async function saveScore() {
+		const nameInput = document.getElementById('player-name').value.trim();
+		if (!nameInput) {
+			alert("Sila masukkan nama anda!");
+			return;
+		}
+
+		try {
+			const payload = {
+				nama: nameInput,
+				skor: score,
+				masa: totalTimeTaken,
+				kategori: currentCategoryName
+			};
+
+			const res = await fetch('/api/leaderboard', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+
+			if (res.ok) {
+				document.getElementById('save-form').style.display = 'none';
+				alert("Skor berjaya disimpan ke Carta Kedudukan Terpusat!");
+				fetchGlobalLeaderboard(); // Kemaskini carta
+			} else {
+				alert("Gagal menyimpan skor.");
+			}
+		} catch (err) {
+			alert("Ralat sambungan semasa menyimpan skor.");
+		}
+	}
+
+    function showMainMenu() {
+        clearInterval(timer);
+        renderLeaderboard(); // Kemaskini carta
+        document.getElementById('main-menu').classList.remove('hidden');
+        document.getElementById('sub-menu-rukun').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+    }
+
+    function showSubMenu(cat) {
+        document.getElementById('main-menu').classList.add('hidden');
+        if (cat === 'rukun') {
+            document.getElementById('sub-menu-rukun').classList.remove('hidden');
+        }
+    }
+
+    function shuffleArray(array) {
+        let shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    async function loadQuiz(category, subCategory = '', categoryName = '') {
+        try {
+            currentCategoryName = categoryName;
+			let url = `/api/soalan?kategori=${category}`;
+            if (subCategory) url += `&sub=${subCategory}`;
+
+            const res = await fetch(url);
+            const responseData = await res.json();
+            
+            let allQuestions = responseData.data;
+            if (allQuestions.length === 0) {
+                alert("Tiada soalan untuk kategori ini lagi.");
+                return;
+            }
+
+            currentQuestions = shuffleArray(allQuestions).slice(0, 10);
+            currentQuestionIndex = 0;
+            score = 0;
+            totalTimeTaken = 0;
+            wrongAnswersHistory = [];
+
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('sub-menu-rukun').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+
+            renderQuestion();
+        } catch (err) {
+            alert("Gagal berhubung dengan backend engine.py!");
+        }
+    }
+
+    function renderQuestion() {
+        clearInterval(timer);
+        
+        timeLeft = 10;
+        document.getElementById('time-left').innerText = timeLeft;
+        document.getElementById('timer-box').classList.remove('warning');
+
+        timer = setInterval(() => {
+            timeLeft--;
+            totalTimeTaken++; // Kira jumlah masa digunakan
+            document.getElementById('time-left').innerText = timeLeft;
+
+            if (timeLeft <= 3) {
+                document.getElementById('timer-box').classList.add('warning');
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                recordWrongAnswer(null, true);
+                nextQuestion();
+            }
+        }, 1000);
+
+        const q = currentQuestions[currentQuestionIndex];
+        document.getElementById('progress').innerText = `Soalan ${currentQuestionIndex + 1} daripada ${currentQuestions.length}`;
+        document.getElementById('question').innerText = q.soalan;
+
+        const optionsContainer = document.getElementById('options');
+        optionsContainer.innerHTML = '';
+
+        q.pilihan.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedIndex) {
+        clearInterval(timer);
+        // Tambahkan baki masa yang digunakan untuk soalan ini ke jumlah masa
+        totalTimeTaken += (10 - timeLeft);
+        
+        const q = currentQuestions[currentQuestionIndex];
+        if (selectedIndex === q.jawapan) {
+            score++;
+        } else {
+            recordWrongAnswer(selectedIndex, false);
+        }
+
+        nextQuestion();
+    }
+
+    function recordWrongAnswer(selectedIndex, isTimeout) {
+        const q = currentQuestions[currentQuestionIndex];
+        wrongAnswersHistory.push({
+            soalan: q.soalan,
+            jawapanPengguna: isTimeout ? "⌛ Masa Habis" : q.pilihan[selectedIndex],
+            jawapanBetul: q.pilihan[q.jawapan]
+        });
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentQuestions.length) {
+            renderQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        clearInterval(timer);
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        
+        document.getElementById('score').innerText = `Skor Anda: ${score} / ${currentQuestions.length}`;
+        document.getElementById('time-taken-text').innerText = `⏱️ Jumlah Masa: ${totalTimeTaken} Saat`;
+
+        // Tunjukkan semula input nama
+        document.getElementById('save-form').style.display = 'block';
+
+        const reviewContainer = document.getElementById('review-container');
+        const reviewList = document.getElementById('review-list');
+        reviewList.innerHTML = '';
+
+        if (wrongAnswersHistory.length > 0) {
+            reviewContainer.classList.remove('hidden');
+            wrongAnswersHistory.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'review-item';
+                div.innerHTML = `
+                    <div class="review-question">${index + 1}. ${item.soalan}</div>
+                    <div class="review-ans">Jawapan Anda: <span class="user-wrong">${item.jawapanPengguna}</span></div>
+                    <div class="review-ans">Jawapan Tepat: <span class="correct-right">✓ ${item.jawapanBetul}</span></div>
+                `;
+                reviewList.appendChild(div);
+            });
+        } else {
+            reviewContainer.classList.add('hidden');
+        }
+    }
+
+    // --- SIKAP LEADERBOARD (LOCALSTORAGE) ---
+    function getLeaderboardData() {
+        return JSON.parse(localStorage.getItem('quiz_leaderboard')) || [];
+    }
+
+    function saveScore() {
+        const nameInput = document.getElementById('player-name').value.trim();
+        if (!nameInput) {
+            alert("Sila masukkan nama anda!");
+            return;
+        }
+
+        let leaderboard = getLeaderboardData();
+        
+        // Masukkan data skor baharu
+        leaderboard.push({
+            nama: nameInput,
+            kategori: currentCategoryName,
+            skor: score,
+            masa: totalTimeTaken
+        });
+
+        // Susun: Markah Tertinggi Dulu, Jika Markah Sama -> Masa Terpantas Dulu
+        leaderboard.sort((a, b) => {
+            if (b.skor !== a.skor) {
+                return b.skor - a.skor;
+            }
+            return a.masa - b.masa;
+        });
+
+        // Simpan 10 yang teratas sahaja
+        leaderboard = leaderboard.slice(0, 10);
+        localStorage.setItem('quiz_leaderboard', JSON.stringify(leaderboard));
+
+        // Sorokkan borang selepas simpan
+        document.getElementById('save-form').style.display = 'none';
+        alert("Skor berjaya disimpan ke Carta Kedudukan!");
+    }
+
+    function renderLeaderboard() {
+        const listContainer = document.getElementById('main-leaderboard');
+        const leaderboard = getLeaderboardData();
+
+        listContainer.innerHTML = '';
+
+        if (leaderboard.length === 0) {
+            listContainer.innerHTML = `<p style="font-size:0.85rem; color:#94a3b8; text-align:center; padding:10px;">Belum ada rekod tersimpan.</p>`;
+            return;
+        }
+
+        leaderboard.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.className = 'leaderboard-item';
+            
+            let medal = `#${index + 1}`;
+            if (index === 0) medal = '🥇';
+            if (index === 1) medal = '🥈';
+            if (index === 2) medal = '🥉';
+
+            li.innerHTML = `
+                <div>
+                    <span class="rank">${medal}</span>
+                    <strong>${item.nama}</strong> 
+                    <small style="color:#64748b;">(${item.kategori})</small>
+                </div>
+                <div>
+                    <strong>${item.skor}/10</strong> 
+                    <small style="color:#64748b;">(${item.masa}s)</small>
+                </div>
+            `;
+            listContainer.appendChild(li);
+        });
+    }
+
+    // --- FUNGSI SHARE WHATSAPP ---
+    function shareToWhatsApp() {
+        const name = document.getElementById('player-name').value.trim() || 'Pemain';
+        
+        const text = `🏆 *CABARAN KUIZ AGAMA ISLAM* 🏆%0A%0A` +
+                     `👤 Nama: *${name}*%0A` +
+                     `📚 Kategori: *${currentCategoryName}*%0A` +
+                     `🎯 Markah: *${score}/10*%0A` +
+                     `⏱️ Masa: *${totalTimeTaken} Saat*%0A%0A` +
+                     `Bolehkah anda kalahkan rekod masa & skor saya? Cabar diri anda sekarang! 🔥`;
+
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${text}`;
+        window.open(whatsappUrl, '_blank');
+    }
+</script>
+
+</body>
+</html>
