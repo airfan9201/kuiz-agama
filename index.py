@@ -260,7 +260,6 @@ QUIZ_DATA = {
             {"id": 19, "soalan": "Berapakah kadar sukatan anggaran air dua kolah mengikut liter moden?", "pilihan": ["Sekitar 216 Liter", "Sekitar 50 Liter", "Sekitar 500 Liter", "Sekitar 1000 Liter"], "jawapan": 0},
             {"id": 20, "soalan": "Mendahulukan anggota kanan daripada anggota kiri semasa berwuduk hukumnya...", "pilihan": ["Sunat", "Rukun", "Wajib", "Makruh"], "jawapan": 0},
             {"id": 21, "soalan": "Menyapu air ke seluruh kepala (bukan sebahagian) hukumnya...", "pilihan": ["Sunat", "Rukun", "Membatalkan wuduk", "Harus"], "jawapan": 0},
-            {"id": 22, "soalan": "Menyelit jari-jemari tangan dan kaki semasa berwuduk dipanggil...", "p```python
             {"id": 22, "soalan": "Menyelit jari-jemari tangan dan kaki semasa berwuduk dipanggil...", "pilihan": ["Takhlil", "Istinja'", "Tahallul", "Tathir"], "jawapan": 0},
             {"id": 23, "soalan": "Membasuh atau membersihkan dua jalan (qubul dan dubur) selepas membuang air dipanggil...", "pilihan": ["Istinja'", "Istisqa'", "Istikharah", "I'tikaf"], "jawapan": 0},
             {"id": 24, "soalan": "Bahan yang paling afdal dan utama digunakan untuk beristinja' ialah...", "pilihan": ["Air Mutlaq", "Batu", "Tisu", "Daun Kering"], "jawapan": 0},
@@ -488,5 +487,6 @@ def handle_leaderboard():
 
         return jsonify({"data": LOCAL_LEADERBOARD})
 
+app = app
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
