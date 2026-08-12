@@ -419,7 +419,7 @@
 
     function showMainMenu() {
         clearInterval(timer);
-        renderLeaderboard(); // Kemaskini carta
+        fetchGlobalLeaderboard(); // Kemaskini carta dari Redis Server
         document.getElementById('main-menu').classList.remove('hidden');
         document.getElementById('sub-menu-rukun').classList.add('hidden');
         document.getElementById('quiz-screen').classList.add('hidden');
@@ -577,79 +577,6 @@
         }
     }
 
-    // --- SIKAP LEADERBOARD (LOCALSTORAGE) ---
-    function getLeaderboardData() {
-        return JSON.parse(localStorage.getItem('quiz_leaderboard')) || [];
-    }
-
-    function saveScore() {
-        const nameInput = document.getElementById('player-name').value.trim();
-        if (!nameInput) {
-            alert("Sila masukkan nama anda!");
-            return;
-        }
-
-        let leaderboard = getLeaderboardData();
-        
-        // Masukkan data skor baharu
-        leaderboard.push({
-            nama: nameInput,
-            kategori: currentCategoryName,
-            skor: score,
-            masa: totalTimeTaken
-        });
-
-        // Susun: Markah Tertinggi Dulu, Jika Markah Sama -> Masa Terpantas Dulu
-        leaderboard.sort((a, b) => {
-            if (b.skor !== a.skor) {
-                return b.skor - a.skor;
-            }
-            return a.masa - b.masa;
-        });
-
-        // Simpan 10 yang teratas sahaja
-        leaderboard = leaderboard.slice(0, 10);
-        localStorage.setItem('quiz_leaderboard', JSON.stringify(leaderboard));
-
-        // Sorokkan borang selepas simpan
-        document.getElementById('save-form').style.display = 'none';
-        alert("Skor berjaya disimpan ke Carta Kedudukan!");
-    }
-
-    function renderLeaderboard() {
-        const listContainer = document.getElementById('main-leaderboard');
-        const leaderboard = getLeaderboardData();
-
-        listContainer.innerHTML = '';
-
-        if (leaderboard.length === 0) {
-            listContainer.innerHTML = `<p style="font-size:0.85rem; color:#94a3b8; text-align:center; padding:10px;">Belum ada rekod tersimpan.</p>`;
-            return;
-        }
-
-        leaderboard.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.className = 'leaderboard-item';
-            
-            let medal = `#${index + 1}`;
-            if (index === 0) medal = '🥇';
-            if (index === 1) medal = '🥈';
-            if (index === 2) medal = '🥉';
-
-            li.innerHTML = `
-                <div>
-                    <span class="rank">${medal}</span>
-                    <strong>${item.nama}</strong> 
-                    <small style="color:#64748b;">(${item.kategori})</small>
-                </div>
-                <div>
-                    <strong>${item.skor}/10</strong> 
-                    <small style="color:#64748b;">(${item.masa}s)</small>
-                </div>
-            `;
-            listContainer.appendChild(li);
-        });
-    }
 
     // --- FUNGSI SHARE WHATSAPP ---
     function shareToWhatsApp() {
