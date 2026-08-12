@@ -386,23 +386,33 @@ QUIZ_DATA = {
 }
 
 # =========================================================
-# TETAPAN REDIS CLOUD CONNECTION
+# FUNGSI MEMPEROLEH SAMBUNGAN REDIS (DYNAMIC CONNECT)
 # =========================================================
-REDIS_URL = (
-    os.environ.get("kuizdb_REDIS_URL") or 
-    os.environ.get("REDIS_URL")
-)
+def get_redis_client():
+    # Mengambil URL dari Environment Variable
+    redis_url = (
+        os.environ.get("kuizdb_REDIS_URL") or 
+        os.environ.get("REDIS_URL") or
+        os.environ.get("KV_URL")
+    )
+    
+    if not redis_url:
+        print("⚠️ TIADA REDIS_URL DIJUMPAI")
+        return None
 
-r_db = None
-if REDIS_URL:
     try:
-        # Sambung menggunakan client 'redis'
-        r_db = redis.Redis.from_url(REDIS_URL, decode_responses=True)
-        r_db.ping()
-        print("✅ REDIS CONNECTED SUCCESSFULLY!")
+        # Cipta client sambungan setiap kali dipanggil jika perlu
+        client = redis.Redis.from_url(
+            redis_url, 
+            decode_responses=True,
+            socket_timeout=3,
+            socket_connect_timeout=3
+        )
+        client.ping()
+        return client
     except Exception as e:
-        print("❌ REDIS CONNECTION ERROR:", str(e))
-        r_db = None
+        print("❌ AGENT REDIS ERROR:", str(e))
+        return None
 
 LOCAL_LEADERBOARD = []
 
@@ -425,6 +435,9 @@ def get_soalan():
 def handle_leaderboard():
     global LOCAL_LEADERBOARD
     LEADERBOARD_KEY = "global_leaderboard"
+    
+    # Buka sambungan ke Redis
+    r_db = get_redis_client()
 
     if request.method == 'POST':
         data = request.json or {}
@@ -440,17 +453,17 @@ def handle_leaderboard():
             "kategori": kategori
         }
 
-        # 1. Simpan ke Redis Cloud jika connection wujud
+        # 1. Simpan ke Redis Cloud jika sambungan wujud
         if r_db:
             try:
                 composite_score = (skor * 1000) + (1000 - masa)
-                # ZADD masukkan ke Sorted Set
+                # ZADD hantar data ke Sorted Set Redis
                 r_db.zadd(LEADERBOARD_KEY, {json.dumps(entry): composite_score})
                 return jsonify({"status": "success", "message": "Skor berjaya disimpan ke Redis Cloud!"})
             except Exception as e:
                 print("Redis Save Error:", e)
 
-        # 2. Fallback jika Redis belum sedia
+        # 2. Fallback tempatan jika Redis bermasalah
         LOCAL_LEADERBOARD.append(entry)
         LOCAL_LEADERBOARD = sorted(LOCAL_LEADERBOARD, key=lambda x: (-x['skor'], x['masa']))[:10]
 
@@ -460,7 +473,6 @@ def handle_leaderboard():
         # GET: Ambil 10 teratas dari Redis Cloud
         if r_db:
             try:
-                # ZREVRANGE ambil ranking tertinggi ke terendah
                 raw_list = r_db.zrevrange(LEADERBOARD_KEY, 0, 9)
                 db_data = []
                 for item in raw_list:
@@ -473,7 +485,6 @@ def handle_leaderboard():
             except Exception as e:
                 print("Redis Fetch Error:", e)
 
-        # Pulangkan data tempatan jika Redis tiada data
         return jsonify({"data": LOCAL_LEADERBOARD})
 
 if __name__ == '__main__':
