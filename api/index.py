@@ -1,8 +1,13 @@
+# =========================================================
+# TETAPAN REDIS / VERCEL DATABASE (AUTO-DETECT KEY)
+# =========================================================
+import urllib.parse
 import os
 import json
 import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
 
 app = Flask(__name__)
 CORS(app)
@@ -297,7 +302,7 @@ QUIZ_DATA = {
         {"id": 21, "soalan": "Strategi menggali parit dalam Perang Khandaq dicadangkan oleh sahabat bernama...", "pilihan": ["Salman Al-Farisi", "Khalid bin Al-Walid", "Abu Ubaidah", "Bilal bin Rabah"], "jawapan": 0},
         {"id": 22, "soalan": "Peristiwa pembukaan semula Kota Makkah tanpa pertumpahan darah dipanggil...", "pilihan": ["Fathul Makkah", "Sulh Hudaibiyah", "Ghazwah Makkah", "Hijrah Makkah"], "jawapan": 0},
         {"id": 23, "soalan": "Siapakah muazin (pelaung azan) pertama dalam Islam?", "pilihan": ["Bilal bin Rabah", "Abdullah bin Ummi Maktum", "Abu Hurairah", "Zaid bin Thabit"], "jawapan": 0},
-        {"id": 24, "soalan": "Masjid pertama yang dibina oleh Nabi Muhammad SAW ialah...", "pilihan": "Masjid Quba'", "pilihan": ["Masjid Quba'", "Masjid Nabawi", "Masjidil Haram", "Masjid Al-Aqsa"], "jawapan": 0},
+        {"id": 24, "soalan": "Masjid pertama yang dibina oleh Nabi Muhammad SAW ialah...", "pilihan": ["Masjid Quba'", "Masjid Nabawi", "Masjidil Haram", "Masjid Al-Aqsa"], "jawapan": 0},
         {"id": 25, "soalan": "Anak perempuan Baginda Nabi SAW yang berkahwin dengan Ali bin Abi Talib ialah...", "pilihan": ["Fatimah Az-Zahra", "Ruqayyah", "Umm Kalthum", "Zainab"], "jawapan": 0},
         {"id": 26, "soalan": "Tahun kematian Khadijah R.A dan Abu Talib dikenali dalam sejarah sebagai...", "pilihan": ["Amul Huzni (Tahun Duka Cita)", "Amul Fil (Tahun Gajah)", "Amul Jamaah", "Amul Wufud"], "jawapan": 0},
         {"id": 27, "soalan": "Nabi Muhammad SAW diutus daripada keturunan kaum...", "pilihan": ["Quraisy", "Tamim", "Ansar", "Khazraj"], "jawapan": 0},
@@ -378,27 +383,41 @@ QUIZ_DATA = {
         {"id": 50, "soalan": "Tempoh keharusan solat Jamak dan Qasar bagi musafir yang menetap di sesuatu tempat (tidak berniat tinggal tetap) ialah...", "pilihan": ["3 Hari 3 Malam (tidak termasuk hari sampai & keluar)", "1 Hari", "10 Hari", "Seminggu"], "jawapan": 0}        
     ]
 }
-
 # =========================================================
-# TETAPAN VERCEL KV / REDIS (TERPUSAT)
+# TETAPAN REDIS / VERCEL DATABASE (AUTO-DETECT KEY)
 # =========================================================
-# Vercel menyediakan URL & Token automatik melalui Environment Variables
-KV_REST_API_URL = os.environ.get("KUIZDB_KV_REST_API_URL") or os.environ.get("KV_REST_API_URL")
-KV_REST_API_TOKEN = os.environ.get("KUIZDB_KV_REST_API_TOKEN") or os.environ.get("KV_REST_API_TOKEN")
 
-def redis_command(command, *args):
-    """Fungsi pembantu untuk menghantar arahan ke Vercel KV REST API"""
-    if not KV_REST_API_URL or not KV_REST_API_TOKEN:
-        return None
-    
-    headers = {"Authorization": f"Bearer {KV_REST_API_TOKEN}"}
-    url = f"{KV_REST_API_URL}/{command}/" + "/".join(map(str, args))
+# 1. Semak jika Vercel sediakan REST API URL & Token
+REST_API_URL = (
+    os.environ.get("KV_REST_API_URL") or 
+    os.environ.get("kuizdb_KV_REST_API_URL") or 
+    os.environ.get("KUIZDB_KV_REST_API_URL") or 
+    os.environ.get("REDIS_REST_API_URL")
+)
+
+REST_API_TOKEN = (
+    os.environ.get("KV_REST_API_TOKEN") or 
+    os.environ.get("kuizdb_KV_REST_API_TOKEN") or 
+    os.environ.get("KUIZDB_KV_REST_API_TOKEN") or 
+    os.environ.get("REDIS_REST_API_TOKEN")
+)
+
+# 2. Jika Vercel guna REDIS_URL biasa (Format redis://default:password@host:port)
+REDIS_URL = os.environ.get("kuizdb_REDIS_URL") or os.environ.get("REDIS_URL")
+
+if not REST_API_URL and REDIS_URL:
     try:
-        res = requests.get(url, headers=headers)
-        return res.json().get("result")
+        # Auto-convert REDIS_URL kepada HTTP REST API URL (Upstash)
+        parsed = urllib.parse.urlparse(REDIS_URL)
+        host = parsed.hostname
+        password = parsed.password
+        if host and password:
+            REST_API_URL = f"https://{host}"
+            REST_API_TOKEN = password
     except Exception as e:
-        print("Redis Error:", e)
-        return None
+        print("Parsing REDIS_URL Error:", e)
+
+LOCAL_LEADERBOARD = []
 
 # =========================================================
 # API ENDPOINTS
@@ -409,7 +428,7 @@ def get_soalan():
     sub = request.args.get('sub')
     
     if kategori == 'rukun' and sub:
-        questions = QUIZ_DATA.get(sub, [])
+        questions = QUIZ_DATA.get('rukun', {}).get(sub, [])
     else:
         questions = QUIZ_DATA.get(kategori, [])
         
@@ -417,6 +436,7 @@ def get_soalan():
 
 @app.route('/api/leaderboard', methods=['GET', 'POST'])
 def handle_leaderboard():
+    global LOCAL_LEADERBOARD
     LEADERBOARD_KEY = "global_leaderboard"
 
     if request.method == 'POST':
@@ -426,43 +446,64 @@ def handle_leaderboard():
         masa = int(data.get("masa", 0))
         kategori = data.get("kategori", "Umum")
 
-        # Kira Markah Gabungan (Skor Utama + Bonus Terpantas Masa)
-        # Contoh: Markah 10 dengan masa 30s -> Score: 10000 - 30 = 9970
-        composite_score = (skor * 1000) + (1000 - masa)
-
-        entry = json.dumps({
+        entry = {
             "nama": nama,
             "skor": skor,
             "masa": masa,
             "kategori": kategori
-        })
+        }
 
-        # Simpan ke Redis Sorted Set (ZADD)
-        if KV_REST_API_URL:
-            # Gunakan REST API Upstash ZADD
-            url = f"{KV_REST_API_URL}/zadd/{LEADERBOARD_KEY}/{composite_score}/{requests.utils.quote(entry)}"
-            headers = {"Authorization": f"Bearer {KV_REST_API_TOKEN}"}
-            requests.get(url, headers=headers)
+        # 1. Simpan ke Upstash Redis / Vercel KV jika kunci ada
+        if REST_API_URL and REST_API_TOKEN:
+            try:
+                composite_score = (skor * 1000) + (1000 - masa)
+                
+                # Gunakan Format REST API Upstash yang betul (POST dengan Body/Payload)
+                url = f"{REST_API_URL}/zadd/{LEADERBOARD_KEY}"
+                headers = {
+                    "Authorization": f"Bearer {REST_API_TOKEN}",
+                    "Content-Type": "application/json"
+                }
+                # Hantar score dan member (JSON string)
+                payload = [composite_score, json.dumps(entry)]
+                
+                response = requests.post(url, headers=headers, json=payload)
+                
+                if response.status_code == 200:
+                    return jsonify({"status": "success", "message": "Skor berjaya disimpan ke Redis!"})
+                else:
+                    print("Redis Error Status:", response.text)
+            except Exception as e:
+                print("Redis Save Error:", e)
 
-        return jsonify({"status": "success", "message": "Skor berjaya disimpan ke pangkalan data terpusat!"})
+        # 2. Fallback: Simpan sementara di Local Memory jika REST API belum bersedia
+        LOCAL_LEADERBOARD.append(entry)
+        LOCAL_LEADERBOARD = sorted(LOCAL_LEADERBOARD, key=lambda x: (-x['skor'], x['masa']))[:10]
+
+        return jsonify({"status": "success", "message": "Skor disimpan secara tempatan sementara!"})
 
     else:
-        # GET: Ambil 10 teratas (ZREVRANGE)
-        if KV_REST_API_URL:
-            url = f"{KV_REST_API_URL}/zrevrange/{LEADERBOARD_KEY}/0/9"
-            headers = {"Authorization": f"Bearer {KV_REST_API_TOKEN}"}
-            res = requests.get(url, headers=headers).json()
-            raw_list = res.get("result", [])
-            
-            leaderboard_data = []
-            for item in raw_list:
-                try:
-                    leaderboard_data.append(json.loads(item))
-                except:
-                    pass
-            return jsonify({"data": leaderboard_data})
-        else:
-            return jsonify({"data": [], "message": "Pangkalan data belum disambung."})
+        # GET: Ambil dari Redis jika ada
+        if REST_API_URL and REST_API_TOKEN:
+            try:
+                url = f"{REST_API_URL}/zrevrange/{LEADERBOARD_KEY}/0/9"
+                headers = {"Authorization": f"Bearer {REST_API_TOKEN}"}
+                res = requests.get(url, headers=headers).json()
+                raw_list = res.get("result", [])
+                
+                db_data = []
+                for item in raw_list:
+                    try:
+                        db_data.append(json.loads(item))
+                    except:
+                        pass
+                if db_data:
+                    return jsonify({"data": db_data})
+            except Exception as e:
+                print("Redis Fetch Error:", e)
+
+        # Pulangkan data simpanan tempatan jika Redis belum berfungsi
+        return jsonify({"data": LOCAL_LEADERBOARD})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
