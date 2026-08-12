@@ -468,6 +468,17 @@
     document.addEventListener("DOMContentLoaded", () => {
         fetchGlobalLeaderboard();
     });
+	
+	// 1. Fungsi untuk dapatkan atau cipta Device ID yang unik bagi setiap peranti
+	function getDeviceId() {
+		let deviceId = localStorage.getItem('user_device_id');
+		if (!deviceId) {
+			// Cipta ID rawak ringkas (contoh: dev-8f2a1b)
+			deviceId = 'dev-' + Math.random().toString(36).substring(2, 8);
+			localStorage.setItem('user_device_id', deviceId);
+		}
+		return deviceId;
+	}
 
     // --- FUNGSI LEADERBOARD TERPUSAT (DATABASE SERVER) ---
     async function fetchGlobalLeaderboard() {
@@ -576,38 +587,45 @@
         });
     }
 
-    async function saveScore() {
-        const nameInput = document.getElementById('player-name').value.trim();
-        if (!nameInput) {
-            alert("Sila masukkan nama anda!");
-            return;
-        }
+   // 2. Kemaskini fungsi saveScore() sedia ada
+	async function saveScore() {
+		const rawName = document.getElementById('player-name').value.trim();
+		if (!rawName) {
+			alert("Sila masukkan nama anda!");
+			return;
+		}
 
-        try {
-            const payload = {
-                nama: nameInput,
-                skor: score,
-                masa: totalTimeTaken,
-                kategori: currentCategoryName
-            };
+		// Dapatkan Device ID
+		const deviceId = getDeviceId();
+		
+		// Gabungkan Username + Postfix Device ID (Contoh: Ali_dev-8f2a1b)
+		const formattedUsername = `${rawName}_${deviceId}`;
 
-            const res = await fetch('/api/leaderboard', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+		try {
+			const payload = {
+				nama: formattedUsername, // Hantar nama yang dah ditambah postfix
+				skor: score,
+				masa: totalTimeTaken,
+				kategori: currentCategoryName
+			};
 
-            if (res.ok) {
-                document.getElementById('save-form').style.display = 'none';
-                alert("Skor berjaya disimpan ke Carta Kedudukan Terpusat!");
-                fetchGlobalLeaderboard(); 
-            } else {
-                alert("Gagal menyimpan skor.");
-            }
-        } catch (err) {
-            alert("Ralat sambungan semasa menyimpan skor.");
-        }
-    }
+			const res = await fetch('/api/leaderboard', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+
+			if (res.ok) {
+				document.getElementById('save-form').style.display = 'none';
+				alert("Skor berjaya disimpan!");
+				fetchGlobalLeaderboard(); 
+			} else {
+				alert("Gagal menyimpan skor.");
+			}
+		} catch (err) {
+			alert("Ralat sambungan semasa menyimpan skor.");
+		}
+	}
 
     function showMainMenu() {
         clearInterval(timer);

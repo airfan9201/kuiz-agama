@@ -441,7 +441,7 @@ def handle_leaderboard():
 
     if request.method == 'POST':
         data = request.json or {}
-        nama = data.get("nama", "Anon").strip()[:15]
+        nama = data.get("nama", "Anon").strip()[:35]
         skor = int(data.get("skor", 0))
         masa = int(data.get("masa", 0))
         kategori = data.get("kategori", "Umum")
