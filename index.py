@@ -6,13 +6,17 @@ import redis
 import os
 import json
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/')
+def home():
+    return send_from_directory('.', 'index.html')
+    
 # =========================================================
 # DATA SOALAN KUIZ (50 SOALAN SETIAP KATEGORI)
 # =========================================================
