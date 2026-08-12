@@ -396,18 +396,12 @@ REDIS_URL = (
 r_db = None
 if REDIS_URL:
     try:
-        # Jika pangkalan data memerlukan SSL, tukar redis:// kepada rediss://
-        if REDIS_URL.startswith("redis://") and not REDIS_URL.startswith("rediss://"):
-            # Sesetengah persekitaran Cloud perlukan ssl_cert_reqs=None
-            r_db = redis.Redis.from_url(REDIS_URL, decode_responses=True, ssl_cert_reqs=None)
-        else:
-            r_db = redis.Redis.from_url(REDIS_URL, decode_responses=True)
-            
-        # Uji sambungan sebenar (Ping)
+        # Sambung menggunakan client 'redis'
+        r_db = redis.Redis.from_url(REDIS_URL, decode_responses=True)
         r_db.ping()
-        print("Berjaya bersambung ke Redis Cloud!")
+        print("✅ REDIS CONNECTED SUCCESSFULLY!")
     except Exception as e:
-        print("Redis Connection Error:", e)
+        print("❌ REDIS CONNECTION ERROR:", str(e))
         r_db = None
 
 LOCAL_LEADERBOARD = []
