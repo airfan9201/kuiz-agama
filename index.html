@@ -404,29 +404,47 @@
     </div>
 
     <!-- Skrin Keputusan -->
-    <div id="result-screen" class="hidden">
-        <h1>Keputusan Kuiz</h1>
-        <div class="score-box" id="score"></div>
-        <p id="time-taken-text" style="color: #64748b; font-size: 0.95rem;"></p>
+	<div id="result-screen" class="hidden">
+		<h1>Keputusan Kuiz</h1>
+		
+		<!-- Petak Skor Sedia Ada -->
+		<div class="score-box" id="score"></div>
 
-        <!-- Form Simpan Rekod -->
-        <div class="save-score-form" id="save-form">
-            <p style="font-size: 0.9rem; margin-bottom: 8px; font-weight: 600;">Masukkan nama untuk rekodkan skor:</p>
-            <input type="text" id="player-name" placeholder="Nama anda..." maxlength="15">
-            <button style="padding: 10px 15px;" onclick="saveScore()">Simpan</button>
-        </div>
+		<!-- TAMBAHAN: Petak Paparan Gelaran (Badge) -->
+		<div id="title-badge" style="
+			font-size: 1.2rem; 
+			font-weight: 700; 
+			margin: 12px 0; 
+			padding: 10px 15px; 
+			background-color: #f0fdf4; 
+			color: #166534; 
+			border: 2px dashed #22c55e; 
+			border-radius: 10px;
+			display: inline-block;
+		">
+			<!-- Gelaran akan dimuatkan oleh JavaScript di sini -->
+		</div>
 
-        <!-- Butang Share WhatsApp -->
-        <button class="whatsapp-btn" onclick="shareToWhatsApp()">💬 Cabar Kawan di WhatsApp</button>
+		<p id="time-taken-text" style="color: #64748b; font-size: 0.95rem;"></p>
 
-        <!-- Bekas Paparan Soalan Salah -->
-        <div id="review-container" class="review-section hidden">
-            <div class="review-title">⚠️ Semakan Soalan yang Salah:</div>
-            <div id="review-list"></div>
-        </div>
+		<!-- Form Simpan Rekod -->
+		<div class="save-score-form" id="save-form">
+			<p style="font-size: 0.9rem; margin-bottom: 8px; font-weight: 600;">Masukkan nama untuk rekodkan skor:</p>
+			<input type="text" id="player-name" placeholder="Nama anda..." maxlength="15">
+			<button style="padding: 10px 15px;" onclick="saveScore()">Simpan</button>
+		</div>
 
-        <button class="back-btn" onclick="showMainMenu()">Ke Menu Utama</button>
-    </div>
+		<!-- Butang Share WhatsApp -->
+		<button class="whatsapp-btn" onclick="shareToWhatsApp()">💬 Cabar Kawan di WhatsApp</button>
+
+		<!-- Bekas Paparan Soalan Salah -->
+		<div id="review-container" class="review-section hidden">
+			<div class="review-title">⚠️ Semakan Soalan yang Salah:</div>
+			<div id="review-list"></div>
+		</div>
+
+		<button class="back-btn" onclick="showMainMenu()">Ke Menu Utama</button>
+	</div>
 </div>
 
 <!-- Modal/Popup Cabaran Pemain Terbaik -->
@@ -468,6 +486,22 @@
     document.addEventListener("DOMContentLoaded", () => {
         fetchGlobalLeaderboard();
     });
+	
+	// 1. Fungsi penentu Gelaran berdasarkan peratusan markah
+	function getBadgeTitle(score, totalQuestions) {
+		const percentage = (score / totalQuestions) * 100;
+
+		if (percentage === 100) {
+			return "👑 Muffal / Ustaz Kuiz";
+		} else if (percentage >= 70) {
+			return "📚 Penuntut Ilmu Dedikasi";
+		} else if (percentage >= 40) {
+			return "🌱 Peringkat Permulaan";
+		} else {
+			return "💡 Perlu Ulangkaji Lagi";
+		}
+	}
+
 	
 	// 1. Fungsi untuk dapatkan atau cipta Device ID yang unik bagi setiap peranti
 	function getDeviceId() {
@@ -755,11 +789,15 @@
     }
 
     function showResult() {
+		// 1. Dapatkan gelaran terlebih dahulu
+		const badgeText = getBadgeTitle(score, currentQuestions.length);
         clearInterval(timer);
         document.getElementById('quiz-screen').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
         
         document.getElementById('score').innerText = `Skor Anda: ${score} / ${currentQuestions.length}`;
+		// PAPARKAN GELARAN DI UI
+		document.getElementById('title-badge').innerHTML = `Gelaran Anda:<br><span style="font-size: 1.5rem;">${badgeText}</span>`;		
         document.getElementById('time-taken-text').innerText = `⏱️ Jumlah Masa: ${totalTimeTaken} Saat`;
 
         document.getElementById('save-form').style.display = 'block';
@@ -792,6 +830,7 @@
                      `👤 Nama: *${name}*%0A` +
                      `📚 Kategori: *${currentCategoryName}*%0A` +
                      `🎯 Markah: *${score}/10*%0A` +
+					 `🎖️ Gelaran: *${badgeText}*%0A` + 
                      `⏱️ Masa: *${totalTimeTaken} Saat*%0A%0A` +
                      `Bolehkah anda kalahkan rekod masa & skor saya? Cabar diri anda sekarang! 🔥`;
 
