@@ -477,6 +477,7 @@
     let totalTimeTaken = 0; 
     let currentCategoryName = '';
     let wrongAnswersHistory = [];
+	let isAnswering = false; 
 
     // Pembolehubah simpanan sementara untuk popup
     let pendingCategory = '';
@@ -719,6 +720,7 @@
 
     function renderQuestion() {
         clearInterval(timer);
+		isAnswering = false;
         
         timeLeft = 10;
         document.getElementById('time-left').innerText = timeLeft;
@@ -751,14 +753,21 @@
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.innerText = opt;
-            btn.onclick = () => checkAnswer(index);
+            btn.onclick = () => checkAnswer(index,btn);
             optionsContainer.appendChild(btn);
         });
     }
 
-    function checkAnswer(selectedIndex) {
+    function checkAnswer(selectedIndex, clickedBtn) {
+		// 1. Jika tengah dalam proses 'idle' / dah tekan, terus batalkan arahan seterusnya
+		if (isAnswering) return; 
+		isAnswering = true; // Set kunci jadi true!
+	
         clearInterval(timer);
         totalTimeTaken += (10 - timeLeft);
+		
+		const allButtons = document.querySelectorAll('.option-btn');
+		allButtons.forEach(btn => btn.disabled = true);
         
         const q = currentQuestions[currentQuestionIndex];
         if (selectedIndex === q.jawapan) {
@@ -767,7 +776,10 @@
             recordWrongAnswer(selectedIndex, false);
         }
 
-        nextQuestion();
+		// 2. Beri sikit masa senggang (0.5 saat) sebelum pergi ke soalan seterusnya
+		setTimeout(() => {
+			nextQuestion();
+		}, 500); // 500ms = 0.5 saat (boleh tukar ke 800ms / 1000ms kalau nak idle lagi lama)
     }
 
     function recordWrongAnswer(selectedIndex, isTimeout) {
@@ -823,20 +835,21 @@
         }
     }
 
-    function shareToWhatsApp() {
-        const name = document.getElementById('player-name').value.trim() || 'Pemain';
-        
-        const text = `🏆 *CABARAN KUIZ AGAMA ISLAM* 🏆%0A%0A` +
-                     `👤 Nama: *${name}*%0A` +
-                     `📚 Kategori: *${currentCategoryName}*%0A` +
-                     `🎯 Markah: *${score}/10*%0A` +
-					 `🎖️ Gelaran: *${badgeText}*%0A` + 
-                     `⏱️ Masa: *${totalTimeTaken} Saat*%0A%0A` +
-                     `Bolehkah anda kalahkan rekod masa & skor saya? Cabar diri anda sekarang! 🔥`;
+	function shareToWhatsApp() {
+		const name = document.getElementById('player-name').value.trim() || 'Pemain';
+		const badgeText = getBadgeTitle(score, currentQuestions.length);
 
-        const whatsappUrl = `https://api.whatsapp.com/send?text=${text}`;
-        window.open(whatsappUrl, '_blank');
-    }
+		const text = `🏆 *CABARAN KUIZ AGAMA ISLAM* 🏆\n\n` +
+					 `👤 Nama: *${name}*\n` +
+					 `📚 Kategori: *${currentCategoryName}*\n` +
+					 `🎯 Markah: *${score}/${currentQuestions.length}*\n` +
+					 `🎖️ Gelaran: *${badgeText}*\n` +
+					 `⏱️ Masa: *${totalTimeTaken} Saat*\n\n` +
+					 `Bolehkah anda kalahkan rekod masa & skor saya? Cabar diri anda sekarang! 🔥`;
+
+		const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+		window.open(whatsappUrl, '_blank');
+	}
 </script>
 
 </body>
