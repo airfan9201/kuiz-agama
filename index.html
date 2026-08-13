@@ -518,7 +518,7 @@
             </div>
 
             <div id="timer-box" class="timer-box">
-                ⏱️ Masa: <span id="time-left">10</span>s
+                ⏱️ Masa: <span id="time-left">15</span>s
             </div>
         </div>
         <div class="question-text" id="question"></div>
@@ -588,7 +588,7 @@
     let currentQuestionIndex = 0;
     let score = 0;
     let timer;
-    let timeLeft = 10;
+    let timeLeft = 15;
     let totalTimeTaken = 0; 
     let currentCategoryName = '';
     let wrongAnswersHistory = [];
@@ -849,7 +849,7 @@
         clearInterval(timer);
 		isAnswering = false;
         
-        timeLeft = 10;
+        timeLeft = 15;
         document.getElementById('time-left').innerText = timeLeft;
         document.getElementById('timer-box').classList.remove('warning');
 
@@ -900,7 +900,7 @@
 		isAnswering = true; 
 	
         clearInterval(timer);
-        totalTimeTaken += (10 - timeLeft);
+        totalTimeTaken += (15 - timeLeft);
 		
 		const allButtons = document.querySelectorAll('.option-btn');
 		allButtons.forEach(btn => btn.disabled = true);
