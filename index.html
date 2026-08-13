@@ -801,6 +801,14 @@
     }
 
     function showResult() {
+		
+		if (totalTimeTaken <= 3) {
+        alert("Anda hanya bermain-main. Sila jawab dengan betul!");
+        showMainMenu(); // Balik ke menu utama serta-merta
+        return; // Hentikan fungsi daripada simpan skor/tunjuk skrin keputusan
+    }
+	
+	
 		// 1. Dapatkan gelaran terlebih dahulu
 		const badgeText = getBadgeTitle(score, currentQuestions.length);
         clearInterval(timer);
