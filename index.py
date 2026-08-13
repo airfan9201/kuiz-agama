@@ -526,6 +526,23 @@ def get_soalan():
     kategori = request.args.get('kategori')
     sub = request.args.get('sub')
     
+    # JIKA MOD SURVIVAL / RAWAK: Kumpulkan semua soalan dari semua kategori
+    if kategori == 'survival' or kategori == 'random':
+        all_questions = []
+        
+        # 1. Ambil dari kategori Rukun (termasuk sub-kategori)
+        for sub_cat, q_list in QUIZ_DATA.get('rukun', {}).items():
+            all_questions.extend(q_list)
+            
+        # 2. Ambil dari Sejarah
+        all_questions.extend(QUIZ_DATA.get('sejarah', []))
+        
+        # 3. Ambil dari Solat Fardu
+        all_questions.extend(QUIZ_DATA.get('solat_fardu', []))
+        
+        return jsonify({"data": all_questions})
+
+    # Logik biasa untuk kategori spesifik
     if kategori == 'rukun' and sub:
         questions = QUIZ_DATA.get('rukun', {}).get(sub, [])
     else:
