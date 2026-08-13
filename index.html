@@ -946,6 +946,7 @@
 	function shareToWhatsApp() {
 		const name = document.getElementById('player-name').value.trim() || 'Pemain';
 		const badgeText = getBadgeTitle(score, currentQuestions.length);
+		const quizUrl = 'https://kuiz-agama.vercel.app/'; // Pautan kuiz anda
 
 		const text = `🏆 *CABARAN KUIZ AGAMA ISLAM* 🏆\n\n` +
 					 `👤 Nama: *${name}*\n` +
@@ -953,7 +954,8 @@
 					 `🎯 Markah: *${score}/${currentQuestions.length}*\n` +
 					 `🎖️ Gelaran: *${badgeText}*\n` +
 					 `⏱️ Masa: *${totalTimeTaken} Saat*\n\n` +
-					 `Bolehkah anda kalahkan rekod masa & skor saya? Cabar diri anda sekarang! 🔥`;
+					 `Bolehkah anda kalahkan rekod masa & skor saya? Cabar diri anda sekarang! 🔥\n\n` +
+					 `👇 Klik pautan di bawah untuk mula main:\n${quizUrl}`;
 
 		const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
 		window.open(whatsappUrl, '_blank');
