@@ -494,7 +494,7 @@
     <!-- Skrin Soalan -->
     <div id="quiz-screen" class="hidden">
         <div class="quiz-header">
-            <span id="progress">Soalan 1 daripada 10</span>
+            <span id="progress">Soalan 1 daripada 20</span>
             <div id="timer-box" class="timer-box">
                 ⏱️ Masa: <span id="time-left">10</span>s
             </div>
@@ -646,7 +646,7 @@
                         <small style="color:#64748b;">(${item.kategori})</small>
                     </div>
                     <div>
-                        <strong>${item.skor}/10</strong> 
+                        <strong>${item.skor}/20</strong> 
                         <small style="color:#64748b;">(${item.masa}s)</small>
                     </div>
                 `;
@@ -687,11 +687,11 @@
                             <span class="leader-name">${escapeHtml(topPlayer.nama)}</span>
                         </div>
                         <div class="leader-stat">
-                            <strong>${topPlayer.skor}/10</strong> (${topPlayer.masa}s)
+                            <strong>${topPlayer.skor}/20</strong> (${topPlayer.masa}s)
                         </div>
                     </div>
                 `;
-                targetText.innerText = `🔥 Sasaran: Dapatkan ${topPlayer.skor}/10 dalam masa kurang daripada ${topPlayer.masa} saat!`;
+                targetText.innerText = `🔥 Sasaran: Dapatkan ${topPlayer.skor}/20 dalam masa kurang daripada ${topPlayer.masa} saat!`;
             } else {
                 leaderBox.innerHTML = `
                     <div class="no-leader-box">
@@ -802,7 +802,7 @@
                 return;
             }
 
-            currentQuestions = shuffleArray(allQuestions).slice(0, 10);
+            currentQuestions = shuffleArray(allQuestions).slice(0, 20);
             currentQuestionIndex = 0;
             score = 0;
             totalTimeTaken = 0;
