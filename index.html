@@ -353,43 +353,143 @@
 			transform: translateY(-2px);
 			background: linear-gradient(135deg, #0f766e, #115e59);
 		}
+		
+		/* Styling Baru Untuk Kad Kategori (Mesra Kanak-kanak) */
+		.category-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+			gap: 15px;
+			margin-top: 20px;
+		}
+
+		.category-card {
+			background: #ffffff;
+			border: 3px solid #e2e8f0;
+			border-radius: 16px;
+			padding: 20px 15px;
+			cursor: pointer;
+			transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+		}
+
+		.category-card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+		}
+
+		/* Warna Kad Berbeza mengikut Tema */
+		.card-rukun { border-color: #3b82f6; background: #eff6ff; }
+		.card-rukun:hover { background: #dbeafe; }
+
+		.card-sejarah { border-color: #f59e0b; background: #fffbeb; }
+		.card-sejarah:hover { background: #fef3c7; }
+
+		.card-solat { border-color: #10b981; background: #ecfdf5; }
+		.card-solat:hover { background: #d1fae5; }
+
+		/* Ikon/Gambar Visual */
+		.card-icon {
+			font-size: 3rem;
+			margin-bottom: 10px;
+		}
+
+		.card-title {
+			font-size: 1.1rem;
+			font-weight: 700;
+			color: #1e293b;
+			margin-bottom: 4px;
+		}
+
+		.card-desc {
+			font-size: 0.8rem;
+			color: #64748b;
+		}
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Menu Utama -->
-    <div id="main-menu">
-        <h1>Kuiz Agama Islam</h1>
-        <p>Sila pilih kategori soalan (10 soalan rawak):</p>
-        <div class="btn-grid">
-            <button onclick="showSubMenu('rukun')">Rukun</button>
-            <button onclick="prepareQuiz('sejarah', '', 'Sejarah Nabi SAW')">Sejarah Nabi SAW</button>
-            <button onclick="prepareQuiz('solat_fardu', '', 'Solat Fardu')">Solat Fardu</button>
-        </div>
 
-        <!-- Paparan Leaderboard di Menu Utama -->
-        <div class="leaderboard-box">
-            <div class="leaderboard-title">
-                <span>🏆 Carta Kedudukan Global</span>
-                <small style="font-size: 0.75rem; color: #64748b; font-weight: normal;">(10 Teratas)</small>
-            </div>
-            <ol id="main-leaderboard" class="leaderboard-list"></ol>
-        </div>
-    </div>
+   <!-- Menu Utama -->
+	<div id="main-menu">
+		<h1>✨ Kuiz Agama Islam ✨</h1>
+		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan agama sambil bermain! 🚀</p>
+		
+		<div class="category-grid">
+			<!-- Kad Rukun -->
+			<div class="category-card card-rukun" onclick="showSubMenu('rukun')">
+				<div class="card-icon">📖</div>
+				<div class="card-title">Rukun</div>
+				<div class="card-desc">Iman, Islam, Solat & Lain-lain</div>
+			</div>
 
-    <!-- Sub Menu Rukun -->
-    <div id="sub-menu-rukun" class="hidden">
-        <h1>Pilih Kategori Rukun</h1>
-        <div class="btn-grid">
-            <button onclick="prepareQuiz('rukun', 'rukun_iman', 'Rukun Iman')">Rukun Iman</button>
-            <button onclick="prepareQuiz('rukun', 'rukun_islam', 'Rukun Islam')">Rukun Islam</button>
-            <button onclick="prepareQuiz('rukun', 'rukun_solat', 'Rukun Solat')">Rukun Solat</button>
-            <button onclick="prepareQuiz('rukun', 'rukun_wuduk', 'Rukun Wuduk')">Rukun Wuduk</button>
-            <button onclick="prepareQuiz('rukun', 'rukun_nikah', 'Rukun Nikah')">Rukun Nikah</button>
-        </div>
-        <button class="back-btn" onclick="showMainMenu()">Kembali</button>
-    </div>
+			<!-- Kad Sejarah Nabi -->
+			<div class="category-card card-sejarah" onclick="prepareQuiz('sejarah', '', 'Sejarah Nabi SAW')">
+				<div class="card-icon">🕌</div>
+				<div class="card-title">Sejarah Nabi</div>
+				<div class="card-desc">Kisah Rasulullah SAW</div>
+			</div>
+
+			<!-- Kad Solat Fardu -->
+			<div class="category-card card-solat" onclick="prepareQuiz('solat_fardu', '', 'Solat Fardu')">
+				<div class="card-icon">🕋</div>
+				<div class="card-title">Solat Fardu</div>
+				<div class="card-desc">Panduan & Rukun Solat</div>
+			</div>
+		</div>
+
+		<!-- Paparan Leaderboard di Menu Utama -->
+		<div class="leaderboard-box">
+			<div class="leaderboard-title">
+				<span>🏆 Carta Kedudukan Global</span>
+				<small style="font-size: 0.75rem; color: #64748b; font-weight: normal;">(10 Teratas)</small>
+			</div>
+			<ol id="main-leaderboard" class="leaderboard-list"></ol>
+		</div>
+	</div>
+
+	<!-- Sub Menu Rukun (Dalam Bentuk Kad) -->
+	<div id="sub-menu-rukun" class="hidden">
+		<h1>📖 Pilih Kategori Rukun</h1>
+		
+		<div class="category-grid">
+			<div class="category-card card-rukun" onclick="prepareQuiz('rukun', 'rukun_iman', 'Rukun Iman')">
+				<div class="card-icon">🌟</div>
+				<div class="card-title">Rukun Iman</div>
+				<div class="card-desc">6 Perkara Asa</div>
+			</div>
+
+			<div class="category-card card-rukun" onclick="prepareQuiz('rukun', 'rukun_islam', 'Rukun Islam')">
+				<div class="card-icon">☝️</div>
+				<div class="card-title">Rukun Islam</div>
+				<div class="card-desc">5 Tiang Agama</div>
+			</div>
+
+			<div class="category-card card-rukun" onclick="prepareQuiz('rukun', 'rukun_solat', 'Rukun Solat')">
+				<div class="card-icon">🧎‍♂️</div>
+				<div class="card-title">Rukun Solat</div>
+				<div class="card-desc">13 Perkara Wajib</div>
+			</div>
+
+			<div class="category-card card-rukun" onclick="prepareQuiz('rukun', 'rukun_wuduk', 'Rukun Wuduk')">
+				<div class="card-icon">💧</div>
+				<div class="card-title">Rukun Wuduk</div>
+				<div class="card-desc">Syarat Sah Solat</div>
+			</div>
+
+			<div class="category-card card-rukun" onclick="prepareQuiz('rukun', 'rukun_nikah', 'Rukun Nikah')">
+				<div class="card-icon">💍</div>
+				<div class="card-title">Rukun Nikah</div>
+				<div class="card-desc">Syarat Syarak</div>
+			</div>
+		</div>
+
+		<button class="back-btn" style="width: 100%; margin-top: 20px;" onclick="showMainMenu()">⬅️ Kembali</button>
+	</div>
 
     <!-- Skrin Soalan -->
     <div id="quiz-screen" class="hidden">
