@@ -124,6 +124,17 @@
             border: 1px solid #fca5a5;
         }
 
+        /* Kotak Nyawa Survival */
+        .lives-box {
+            background-color: #fef2f2;
+            color: #dc2626;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border: 1px solid #fecaca;
+        }
+
         .timer-box.warning {
             animation: pulse 0.5s infinite alternate;
         }
@@ -148,7 +159,6 @@
             margin: 10px 0;
         }
 
-        /* Input Form & Leaderboard UI */
         .save-score-form {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -206,7 +216,6 @@
             width: 25px;
         }
 
-        /* Seksyen Soalan Salah (Review) */
         .review-section {
             margin-top: 20px;
             text-align: left;
@@ -246,7 +255,6 @@
         .user-wrong { color: var(--danger-color); font-weight: 600; }
         .correct-right { color: var(--success-color); font-weight: 600; }
 		
-		/* Modal Overlay */
 		.modal-overlay {
 			position: fixed;
 			top: 0;
@@ -354,7 +362,6 @@
 			background: linear-gradient(135deg, #0f766e, #115e59);
 		}
 		
-		/* Styling Baru Untuk Kad Kategori (Mesra Kanak-kanak) */
 		.category-grid {
 			display: grid;
 			grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -381,7 +388,6 @@
 			box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 		}
 
-		/* Warna Kad Berbeza mengikut Tema */
 		.card-rukun { border-color: #3b82f6; background: #eff6ff; }
 		.card-rukun:hover { background: #dbeafe; }
 
@@ -391,7 +397,10 @@
 		.card-solat { border-color: #10b981; background: #ecfdf5; }
 		.card-solat:hover { background: #d1fae5; }
 
-		/* Ikon/Gambar Visual */
+		/* Style Kad Survival (Mod Cabut Nyawa) */
+		.card-survival { border-color: #ef4444; background: #fef2f2; }
+		.card-survival:hover { background: #fee2e2; }
+
 		.card-icon {
 			font-size: 3rem;
 			margin-bottom: 10px;
@@ -440,6 +449,13 @@
 				<div class="card-title">Solat Fardu</div>
 				<div class="card-desc">Panduan & Rukun Solat</div>
 			</div>
+
+			<!-- KAD BAHARU: MOD CABUT N YAWA (SURVIVAL) -->
+			<div class="category-card card-survival" onclick="prepareQuiz('sejarah', '', 'Cabut Nyawa (Survival)', true)">
+				<div class="card-icon">💀</div>
+				<div class="card-title">Cabut Nyawa</div>
+				<div class="card-desc">3 Nyawa sahaja! Salah = Game Over</div>
+			</div>
 		</div>
 
 		<!-- Paparan Leaderboard di Menu Utama -->
@@ -452,7 +468,7 @@
 		</div>
 	</div>
 
-	<!-- Sub Menu Rukun (Dalam Bentuk Kad) -->
+	<!-- Sub Menu Rukun -->
 	<div id="sub-menu-rukun" class="hidden">
 		<h1>📖 Pilih Kategori Rukun</h1>
 		
@@ -495,6 +511,12 @@
     <div id="quiz-screen" class="hidden">
         <div class="quiz-header">
             <span id="progress">Soalan 1 daripada 20</span>
+            
+            <!-- Elemen Nyawa (Survival) -->
+            <div id="lives-container" class="lives-box hidden">
+                ❤️ <span id="lives-count">3</span>
+            </div>
+
             <div id="timer-box" class="timer-box">
                 ⏱️ Masa: <span id="time-left">10</span>s
             </div>
@@ -505,12 +527,10 @@
 
     <!-- Skrin Keputusan -->
 	<div id="result-screen" class="hidden">
-		<h1>Keputusan Kuiz</h1>
+		<h1 id="result-title">Keputusan Kuiz</h1>
 		
-		<!-- Petak Skor Sedia Ada -->
 		<div class="score-box" id="score"></div>
 
-		<!-- TAMBAHAN: Petak Paparan Gelaran (Badge) -->
 		<div id="title-badge" style="
 			font-size: 1.2rem; 
 			font-weight: 700; 
@@ -522,7 +542,6 @@
 			border-radius: 10px;
 			display: inline-block;
 		">
-			<!-- Gelaran akan dimuatkan oleh JavaScript di sini -->
 		</div>
 
 		<p id="time-taken-text" style="color: #64748b; font-size: 0.95rem;"></p>
@@ -534,10 +553,8 @@
 			<button style="padding: 10px 15px;" onclick="saveScore()">Simpan</button>
 		</div>
 
-		<!-- Butang Share WhatsApp -->
 		<button class="whatsapp-btn" onclick="shareToWhatsApp()">💬 Cabar Kawan di WhatsApp</button>
 
-		<!-- Bekas Paparan Soalan Salah -->
 		<div id="review-container" class="review-section hidden">
 			<div class="review-title">⚠️ Semakan Soalan yang Salah:</div>
 			<div id="review-list"></div>
@@ -547,7 +564,7 @@
 	</div>
 </div>
 
-<!-- Modal/Popup Cabaran Pemain Terbaik -->
+<!-- Modal Popup Cabaran Pemain Terbaik -->
 <div id="leader-challenge-modal" class="modal-overlay hidden">
     <div class="modal-card">
         <div class="modal-header">
@@ -556,9 +573,7 @@
         </div>
         <div class="modal-body">
             <p class="challenge-label">Pemegang Rekod Terpantas Kategori Ini:</p>
-            <div id="leader-info-box" class="leader-box">
-                <!-- Data akan dimasukkan melalui JS -->
-            </div>
+            <div id="leader-info-box" class="leader-box"></div>
             <p class="challenge-subtext" id="challenge-target-text">Bolehkah anda atasi rekod ini?</p>
         </div>
         <button id="start-quiz-btn" class="btn-primary-start" onclick="confirmAndStartQuiz()">
@@ -579,18 +594,27 @@
     let wrongAnswersHistory = [];
 	let isAnswering = false; 
 
-    // Pembolehubah simpanan sementara untuk popup
+    // PEMBOLEHUBAH BAHARU UNTUK MOD SURVIVAL
+    let isSurvivalMode = false;
+    let lives = 3;
+
     let pendingCategory = '';
     let pendingSubCategory = '';
     let pendingCategoryName = '';
+    let pendingIsSurvival = false;
 
     document.addEventListener("DOMContentLoaded", () => {
         fetchGlobalLeaderboard();
     });
 	
-	// 1. Fungsi penentu Gelaran berdasarkan peratusan markah
 	function getBadgeTitle(score, totalQuestions) {
 		const percentage = (score / totalQuestions) * 100;
+
+        if (isSurvivalMode) {
+            if (score >= 15) return "💀 Pejuang Survival Kental";
+            if (score >= 8) return "🛡️ Pahlawan Bertahan";
+            return "🪦 Korban Cabut Nyawa";
+        }
 
 		if (percentage === 100) {
 			return "👑 Muffal / Ustaz Kuiz";
@@ -603,19 +627,15 @@
 		}
 	}
 
-	
-	// 1. Fungsi untuk dapatkan atau cipta Device ID yang unik bagi setiap peranti
 	function getDeviceId() {
 		let deviceId = localStorage.getItem('user_device_id');
 		if (!deviceId) {
-			// Cipta ID rawak ringkas (contoh: dev-8f2a1b)
 			deviceId = 'dev-' + Math.random().toString(36).substring(2, 8);
 			localStorage.setItem('user_device_id', deviceId);
 		}
 		return deviceId;
 	}
 
-    // --- FUNGSI LEADERBOARD TERPUSAT (DATABASE SERVER) ---
     async function fetchGlobalLeaderboard() {
         const listContainer = document.getElementById('main-leaderboard');
         try {
@@ -657,11 +677,11 @@
         }
     }
 
-    // --- FUNGSI MEMANSSKAN POPUP PREPARE QUIZ ---
-    async function prepareQuiz(category, subCategory = '', categoryName = '') {
+    async function prepareQuiz(category, subCategory = '', categoryName = '', isSurvival = false) {
         pendingCategory = category;
         pendingSubCategory = subCategory;
         pendingCategoryName = categoryName;
+        pendingIsSurvival = isSurvival;
 
         document.getElementById('modal-category-title').innerText = categoryName;
         const leaderBox = document.getElementById('leader-info-box');
@@ -675,7 +695,6 @@
             const responseData = await res.json();
             const allLeaderboard = responseData.data || [];
 
-            // Tapis mengikut kategori terpilih
             const categoryLeaders = allLeaderboard.filter(item => item.kategori === categoryName);
 
             if (categoryLeaders.length > 0) {
@@ -708,7 +727,7 @@
 
     function confirmAndStartQuiz() {
         document.getElementById('leader-challenge-modal').classList.add('hidden');
-        loadQuiz(pendingCategory, pendingSubCategory, pendingCategoryName);
+        loadQuiz(pendingCategory, pendingSubCategory, pendingCategoryName, pendingIsSurvival);
     }
 
     function closeChallengeModal() {
@@ -722,7 +741,6 @@
         });
     }
 
-   // 2. Kemaskini fungsi saveScore() sedia ada
 	async function saveScore() {
 		const rawName = document.getElementById('player-name').value.trim();
 		if (!rawName) {
@@ -730,15 +748,12 @@
 			return;
 		}
 
-		// Dapatkan Device ID
 		const deviceId = getDeviceId();
-		
-		// Gabungkan Username + Postfix Device ID (Contoh: Ali_dev-8f2a1b)
 		const formattedUsername = `${rawName}_${deviceId}`;
 
 		try {
 			const payload = {
-				nama: formattedUsername, // Hantar nama yang dah ditambah postfix
+				nama: formattedUsername,
 				skor: score,
 				masa: totalTimeTaken,
 				kategori: currentCategoryName
@@ -787,9 +802,12 @@
         return shuffled;
     }
 
-    async function loadQuiz(category, subCategory = '', categoryName = '') {
+    async function loadQuiz(category, subCategory = '', categoryName = '', isSurvival = false) {
         try {
             currentCategoryName = categoryName;
+            isSurvivalMode = isSurvival;
+            lives = 3; // Reset nyawa ke 3
+
             let url = `/api/soalan?kategori=${category}`;
             if (subCategory) url += `&sub=${subCategory}`;
 
@@ -807,6 +825,15 @@
             score = 0;
             totalTimeTaken = 0;
             wrongAnswersHistory = [];
+
+            // Tetapkan paparan nyawa mengikut mod
+            const livesBox = document.getElementById('lives-container');
+            if (isSurvivalMode) {
+                livesBox.classList.remove('hidden');
+                document.getElementById('lives-count').innerText = lives;
+            } else {
+                livesBox.classList.add('hidden');
+            }
 
             document.getElementById('main-menu').classList.add('hidden');
             document.getElementById('sub-menu-rukun').classList.add('hidden');
@@ -838,6 +865,16 @@
             if (timeLeft <= 0) {
                 clearInterval(timer);
                 recordWrongAnswer(null, true);
+                
+                // Tolak nyawa jika masa habis dalam Survival Mode
+                if (isSurvivalMode) {
+                    lives--;
+                    document.getElementById('lives-count').innerText = lives;
+                    if (lives <= 0) {
+                        showResult(true);
+                        return;
+                    }
+                }
                 nextQuestion();
             }
         }, 1000);
@@ -859,9 +896,8 @@
     }
 
     function checkAnswer(selectedIndex, clickedBtn) {
-		// 1. Jika tengah dalam proses 'idle' / dah tekan, terus batalkan arahan seterusnya
 		if (isAnswering) return; 
-		isAnswering = true; // Set kunci jadi true!
+		isAnswering = true; 
 	
         clearInterval(timer);
         totalTimeTaken += (10 - timeLeft);
@@ -874,12 +910,25 @@
             score++;
         } else {
             recordWrongAnswer(selectedIndex, false);
+            
+            // LOGIK SURVIVAL: Kurangkan nyawa jika salah
+            if (isSurvivalMode) {
+                lives--;
+                document.getElementById('lives-count').innerText = lives;
+                
+                // Jika nyawa habis, tamat permainan serta-merta
+                if (lives <= 0) {
+                    setTimeout(() => {
+                        showResult(true);
+                    }, 500);
+                    return;
+                }
+            }
         }
 
-		// 2. Beri sikit masa senggang (0.5 saat) sebelum pergi ke soalan seterusnya
 		setTimeout(() => {
 			nextQuestion();
-		}, 500); // 500ms = 0.5 saat (boleh tukar ke 800ms / 1000ms kalau nak idle lagi lama)
+		}, 500);
     }
 
     function recordWrongAnswer(selectedIndex, isTimeout) {
@@ -896,27 +945,33 @@
         if (currentQuestionIndex < currentQuestions.length) {
             renderQuestion();
         } else {
-            showResult();
+            showResult(false);
         }
     }
 
-    function showResult() {
-		
+    function showResult(isGameOver = false) {
 		if (totalTimeTaken <= 3) {
-        alert("Anda hanya bermain-main. Sila jawab dengan betul!");
-        showMainMenu(); // Balik ke menu utama serta-merta
-        return; // Hentikan fungsi daripada simpan skor/tunjuk skrin keputusan
-    }
-	
-	
-		// 1. Dapatkan gelaran terlebih dahulu
+            alert("Anda hanya bermain-main. Sila jawab dengan betul!");
+            showMainMenu();
+            return;
+        }
+
 		const badgeText = getBadgeTitle(score, currentQuestions.length);
         clearInterval(timer);
         document.getElementById('quiz-screen').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
         
+        // Tukar tajuk jika Game Over (Survival Mode)
+        const resultTitle = document.getElementById('result-title');
+        if (isGameOver) {
+            resultTitle.innerText = "💀 GAME OVER (Nyawa Habis!)";
+            resultTitle.style.color = "#ef4444";
+        } else {
+            resultTitle.innerText = "Keputusan Kuiz";
+            resultTitle.style.color = "#0d9488";
+        }
+
         document.getElementById('score').innerText = `Skor Anda: ${score} / ${currentQuestions.length}`;
-		// PAPARKAN GELARAN DI UI
 		document.getElementById('title-badge').innerHTML = `Gelaran Anda:<br><span style="font-size: 1.5rem;">${badgeText}</span>`;		
         document.getElementById('time-taken-text').innerText = `⏱️ Jumlah Masa: ${totalTimeTaken} Saat`;
 
@@ -946,7 +1001,7 @@
 	function shareToWhatsApp() {
 		const name = document.getElementById('player-name').value.trim() || 'Pemain';
 		const badgeText = getBadgeTitle(score, currentQuestions.length);
-		const quizUrl = 'https://kuiz-agama.vercel.app/'; // Pautan kuiz anda
+		const quizUrl = 'https://kuiz-agama.vercel.app/'; 
 
 		const text = `🏆 *CABARAN KUIZ AGAMA ISLAM* 🏆\n\n` +
 					 `👤 Nama: *${name}*\n` +
