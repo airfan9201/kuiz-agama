@@ -417,6 +417,42 @@
 			font-size: 0.8rem;
 			color: #64748b;
 		}
+		
+		/* --- ANIMASI MOD CEMAS (5 SAAT TERAKHIR) --- */
+
+		/* Pemasa Berdegup */
+		.timer-box.panic {
+			background-color: #ef4444 !important;
+			color: #ffffff !important;
+			border-color: #b91c1c !important;
+			font-weight: bold;
+			animation: heartbeat 0.4s infinite alternate;
+		}
+
+		@keyframes heartbeat {
+			0% { transform: scale(1); box-shadow: 0 0 0px rgba(239, 68, 68, 0); }
+			100% { transform: scale(1.15); box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); }
+		}
+
+		/* Skrin Bergetar & Cahaya Merah Amaran */
+		.container.panic-mode {
+			animation: screenShake 0.3s infinite, redPulse 0.8s infinite alternate;
+			border: 3px solid #ef4444;
+		}
+
+		@keyframes screenShake {
+			0% { transform: translate(1px, 1px) rotate(0deg); }
+			20% { transform: translate(-1px, -2px) rotate(-0.5deg); }
+			40% { transform: translate(-2px, 0px) rotate(0.5deg); }
+			60% { transform: translate(2px, 1px) rotate(0deg); }
+			80% { transform: translate(1px, -1px) rotate(0.5deg); }
+			100% { transform: translate(-1px, 2px) rotate(-0.5deg); }
+		}
+
+		@keyframes redPulse {
+			0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+			100% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.8); }
+		}
     </style>
 </head>
 <body>
@@ -845,91 +881,134 @@
         }
     }
 
-    function renderQuestion() {
-        clearInterval(timer);
-		isAnswering = false;
-        
-        timeLeft = 15;
+   function renderQuestion() {
+    clearInterval(timer);
+    isAnswering = false;
+    
+    // 1. Dapatkan elemen untuk kesan cemas
+    const container = document.querySelector('.container');
+    const timerBox = document.getElementById('timer-box');
+    
+    // 2. Bersihkan kelas cemas/warning setiap kali soalan baharu bermula
+    container.classList.remove('panic-mode');
+    timerBox.classList.remove('panic', 'warning');
+    
+    timeLeft = 15; // Masa asal anda
+    document.getElementById('time-left').innerText = timeLeft;
+
+    timer = setInterval(() => {
+        timeLeft--;
+        totalTimeTaken++; 
         document.getElementById('time-left').innerText = timeLeft;
-        document.getElementById('timer-box').classList.remove('warning');
 
-        timer = setInterval(() => {
-            timeLeft--;
-            totalTimeTaken++; 
-            document.getElementById('time-left').innerText = timeLeft;
+        // 3. LOGIK ANIMASI CEMAS: Apabila masa <= 5 saat
+        if (timeLeft <= 5 && timeLeft > 0) {
+            timerBox.classList.add('panic');
+            container.classList.add('panic-mode');
+        }
 
-            if (timeLeft <= 3) {
-                document.getElementById('timer-box').classList.add('warning');
-            }
-
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                recordWrongAnswer(null, true);
-                
-                // Tolak nyawa jika masa habis dalam Survival Mode
-                if (isSurvivalMode) {
-                    lives--;
-                    document.getElementById('lives-count').innerText = lives;
-                    if (lives <= 0) {
-                        showResult(true);
-                        return;
-                    }
-                }
-                nextQuestion();
-            }
-        }, 1000);
-
-        const q = currentQuestions[currentQuestionIndex];
-        document.getElementById('progress').innerText = `Soalan ${currentQuestionIndex + 1} daripada ${currentQuestions.length}`;
-        document.getElementById('question').innerText = q.soalan;
-
-        const optionsContainer = document.getElementById('options');
-        optionsContainer.innerHTML = '';
-
-        q.pilihan.forEach((opt, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(index,btn);
-            optionsContainer.appendChild(btn);
-        });
-    }
-
-    function checkAnswer(selectedIndex, clickedBtn) {
-		if (isAnswering) return; 
-		isAnswering = true; 
-	
-        clearInterval(timer);
-        totalTimeTaken += (15 - timeLeft);
-		
-		const allButtons = document.querySelectorAll('.option-btn');
-		allButtons.forEach(btn => btn.disabled = true);
-        
-        const q = currentQuestions[currentQuestionIndex];
-        if (selectedIndex === q.jawapan) {
-            score++;
-        } else {
-            recordWrongAnswer(selectedIndex, false);
+        if (timeLeft <= 0) {
+            clearInterval(timer);
             
-            // LOGIK SURVIVAL: Kurangkan nyawa jika salah
+            // Bersihkan kesan cemas bila masa tamat
+            container.classList.remove('panic-mode');
+            timerBox.classList.remove('panic');
+
+            recordWrongAnswer(null, true);
+            
+            // Tolak nyawa jika masa habis dalam Survival Mode
             if (isSurvivalMode) {
                 lives--;
                 document.getElementById('lives-count').innerText = lives;
-                
-                // Jika nyawa habis, tamat permainan serta-merta
                 if (lives <= 0) {
-                    setTimeout(() => {
-                        showResult(true);
-                    }, 500);
+                    showResult(true);
                     return;
                 }
             }
+            nextQuestion();
         }
+    }, 1000);
 
+		const q = currentQuestions[currentQuestionIndex];
+		document.getElementById('progress').innerText = `Soalan ${currentQuestionIndex + 1} daripada ${currentQuestions.length}`;
+		document.getElementById('question').innerText = q.soalan;
+
+		const optionsContainer = document.getElementById('options');
+		optionsContainer.innerHTML = '';
+
+		q.pilihan.forEach((opt, index) => {
+			const btn = document.createElement('button');
+			btn.className = 'option-btn';
+			btn.innerText = opt;
+			btn.onclick = () => checkAnswer(index, btn);
+			optionsContainer.appendChild(btn);
+		});
+	}
+
+	function checkAnswer(selectedIndex, clickedBtn) {
+		if (isAnswering) return; 
+		isAnswering = true; 
+
+		clearInterval(timer);
+
+		// 1. Hentikan animasi cemas serta-merta sebaik soalan dijawab
+		document.querySelector('.container').classList.remove('panic-mode');
+		document.getElementById('timer-box').classList.remove('panic');
+
+		totalTimeTaken += (15 - timeLeft);
+		
+		// 2. Kunci semua butang supaya tidak boleh ditekan banyak kali
+		const allButtons = document.querySelectorAll('.option-btn');
+		allButtons.forEach(btn => btn.disabled = true);
+		
+		const q = currentQuestions[currentQuestionIndex];
+
+		// 3. TUKAR WARNA BUTANG (MAKLUM BALAS VISUAL):
+		if (selectedIndex === q.jawapan) {
+			score++;
+			// Jika betul, tukar butang yang ditekan jadi warna Hijau
+			if (clickedBtn) {
+				clickedBtn.style.backgroundColor = '#10b981';
+				clickedBtn.style.color = '#ffffff';
+				clickedBtn.style.borderColor = '#059669';
+			}
+		} else {
+			// Jika salah, tukar butang yang ditekan jadi warna Merah
+			if (clickedBtn) {
+				clickedBtn.style.backgroundColor = '#ef4444';
+				clickedBtn.style.color = '#ffffff';
+				clickedBtn.style.borderColor = '#dc2626';
+			}
+
+			// Tunjukkan jawapan SEBENAR yang betul dalam warna Hijau
+			if (allButtons[q.jawapan]) {
+				allButtons[q.jawapan].style.backgroundColor = '#10b981';
+				allButtons[q.jawapan].style.color = '#ffffff';
+				allButtons[q.jawapan].style.borderColor = '#059669';
+			}
+
+			recordWrongAnswer(selectedIndex, false);
+			
+			// LOGIK SURVIVAL: Kurangkan nyawa jika salah
+			if (isSurvivalMode) {
+				lives--;
+				document.getElementById('lives-count').innerText = lives;
+				
+				// Jika nyawa habis, tamat permainan serta-merta
+				if (lives <= 0) {
+					setTimeout(() => {
+						showResult(true);
+					}, 200); // Beri masa 0.2 saat untuk pemain sempat nampak jawapan betul
+					return;
+				}
+			}
+		}
+
+		// Beri masa 0.8 saat (800ms) sebelum berpindah ke soalan seterusnya
 		setTimeout(() => {
 			nextQuestion();
-		}, 500);
-    }
+		}, 800);
+	}
 
     function recordWrongAnswer(selectedIndex, isTimeout) {
         const q = currentQuestions[currentQuestionIndex];
