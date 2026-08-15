@@ -1137,14 +1137,16 @@
 	}
 
     /* --- LOGIK PERMAINAN TEKA PERKATAAN (WORDLE) --- */
+
 	let wordleStopwatch;
+	let revealedLettersCount = 0; // Mengira berapa kali petunjuk digunakan (max 3)
 
 	async function startWordleGame() {
 		try {
 			const res = await fetch('/api/wordle-soalan');
 			const data = await res.json();
 			
-			// AMBIL 1 PERKATAAN SAHAJA UNTUK 1 SESI
+			// Ambil 1 perkataan sahaja
 			wordleQuestions = shuffleArray(data.data).slice(0, 1); 
 
 			if (wordleQuestions.length === 0) {
@@ -1154,11 +1156,12 @@
 
 			currentWordleIndex = 0;
 			score = 0;
-			totalTimeTaken = 0; // Reset jumlah masa
+			totalTimeTaken = 0;
+			revealedLettersCount = 0; // Reset bilangan pembuka aksara
 			wrongAnswersHistory = [];
 			currentCategoryName = "Teka Perkataan";
 
-			// Mula Pengira Masa Menaik (Stopwatch)
+			// Mula Stopwatch
 			clearInterval(wordleStopwatch);
 			wordleStopwatch = setInterval(() => {
 				totalTimeTaken++;
@@ -1175,7 +1178,6 @@
 		}
 	}
 
-
 	function loadWordlePuzzle() {
 		const item = wordleQuestions[currentWordleIndex];
 		targetWord = item.jawapan;
@@ -1183,8 +1185,14 @@
 		currentAttempt = 0;
 		currentTile = 0;
 
-		// Paparan tajuk tanpa pembayang
-		document.getElementById('wordle-hint').innerText = `🧩 Teka Perkataan (${wordLen} Huruf)`;
+		// Paparan tajuk & butang bantuan
+		const hintContainer = document.getElementById('wordle-hint');
+		hintContainer.innerHTML = `
+			<div style="margin-bottom: 8px;">🧩 Teka Perkataan (${wordLen} Huruf)</div>
+			<button id="reveal-btn" style="padding: 6px 12px; font-size: 0.85rem; background: #8b5cf6;" onclick="revealOneLetter()">
+				💡 Buka 1 Aksara (+10s Masa) [<span id="reveal-count">3</span>/3]
+			</button>
+		`;
 
 		// Cipta grid petak mengikut panjang perkataan (wordLen)
 		const board = document.getElementById('wordle-board');
@@ -1202,6 +1210,53 @@
 				rowDiv.appendChild(tileDiv);
 			}
 			board.appendChild(rowDiv);
+		}
+	}
+
+	// FUNGSI KHAS: Buka 1 Aksara dan Tambah 10 Saat Penalti
+	function revealOneLetter() {
+		if (revealedLettersCount >= 3) {
+			alert("Anda telah mencapai had maksima 3 aksara bantuan!");
+			return;
+		}
+
+		// Cari kedudukan (index) aksara yang belum diteka betul dalam percubaan semasa
+		let unrevealedIndices = [];
+		for (let i = 0; i < wordLen; i++) {
+			if (guessRows[currentAttempt][i] !== targetWord[i]) {
+				unrevealedIndices.push(i);
+			}
+		}
+
+		if (unrevealedIndices.length === 0) {
+			alert("Semua aksara telah ditemui!");
+			return;
+		}
+
+		// Pilih 1 aksara rawak yang belum dibuka
+		const randomIndex = unrevealedIndices[Math.floor(Math.random() * unrevealedIndices.length)];
+		const revealedLetter = targetWord[randomIndex];
+
+		// Isi aksara tersebut ke dalam petak percubaan semasa
+		guessRows[currentAttempt][randomIndex] = revealedLetter;
+		const tile = document.getElementById(`row-${currentAttempt}-tile-${randomIndex}`);
+		if (tile) {
+			tile.innerText = revealedLetter;
+			tile.style.borderColor = "#8b5cf6"; // Warna penanda aksara bantuan
+			tile.style.color = "#8b5cf6";
+		}
+
+		// Tambah 10 saat penalti pada jumlah masa
+		totalTimeTaken += 10;
+		revealedLettersCount++;
+
+		// Kemaskini paparan masa & baki butang bantuan
+		document.getElementById('wordle-timer-box').innerText = totalTimeTaken;
+		document.getElementById('reveal-count').innerText = 3 - revealedLettersCount;
+
+		if (revealedLettersCount >= 3) {
+			const btn = document.getElementById('reveal-btn');
+			if (btn) btn.disabled = true;
 		}
 	}
 
@@ -1225,19 +1280,22 @@
 		}
 
 		if (currentGuess === targetWord) {
-			score++;
+			// TAHNAIAH: Jika Berjaya
+			clearInterval(wordleStopwatch);
+			score = 1;
 			setTimeout(() => {
 				alert("Tahniah! Tekaan anda betul! 🎉");
-				nextWordlePuzzle();
+				showResult(false);
 			}, 300);
 		} else {
 			currentAttempt++;
 			currentTile = 0;
 			if (currentAttempt >= maxAttempts) {
-				recordWordleWrongAnswer(currentGuess);
+				// GAGAL: Kembalikan ke Laman Utama Tanpa Bagi Jawapan
+				clearInterval(wordleStopwatch);
 				setTimeout(() => {
-					alert(`Gagal! Jawapan sebenar ialah: ${targetWord}`);
-					nextWordlePuzzle();
+					alert("Anda gagal menyelesaikan masalah.");
+					showMainMenu();
 				}, 300);
 			}
 		}
