@@ -1143,7 +1143,9 @@
 		try {
 			const res = await fetch('/api/wordle-soalan');
 			const data = await res.json();
-			wordleQuestions = shuffleArray(data.data).slice(0, 5); // 5 soalan setiap sesi
+			
+			// AMBIL 1 PERKATAAN SAHAJA UNTUK 1 SESI
+			wordleQuestions = shuffleArray(data.data).slice(0, 1); 
 
 			if (wordleQuestions.length === 0) {
 				alert("Tiada perkataan ditemui.");
@@ -1173,6 +1175,7 @@
 		}
 	}
 
+
 	function loadWordlePuzzle() {
 		const item = wordleQuestions[currentWordleIndex];
 		targetWord = item.jawapan;
@@ -1180,8 +1183,8 @@
 		currentAttempt = 0;
 		currentTile = 0;
 
-		// PAPARAN TANPA PEMBAYANG (Hanya tunjuk bilangan soalan & bilangan huruf)
-		document.getElementById('wordle-hint').innerText = `🧩 Perkataan ${currentWordleIndex + 1}/${wordleQuestions.length} (${wordLen} Huruf)`;
+		// Paparan tajuk tanpa pembayang
+		document.getElementById('wordle-hint').innerText = `🧩 Teka Perkataan (${wordLen} Huruf)`;
 
 		// Cipta grid petak mengikut panjang perkataan (wordLen)
 		const board = document.getElementById('wordle-board');
@@ -1200,6 +1203,58 @@
 			}
 			board.appendChild(rowDiv);
 		}
+	}
+
+	function checkWordleGuess() {
+		const currentGuess = guessRows[currentAttempt].join('');
+		const targetArr = targetWord.split('');
+
+		for (let i = 0; i < wordLen; i++) {
+			const tile = document.getElementById(`row-${currentAttempt}-tile-${i}`);
+			const letter = currentGuess[i];
+
+			if (letter === targetArr[i]) {
+				tile.classList.add('correct');
+				targetArr[i] = null;
+			} else if (targetArr.includes(letter)) {
+				tile.classList.add('present');
+				targetArr[targetArr.indexOf(letter)] = null;
+			} else {
+				tile.classList.add('absent');
+			}
+		}
+
+		if (currentGuess === targetWord) {
+			score++;
+			setTimeout(() => {
+				alert("Tahniah! Tekaan anda betul! 🎉");
+				nextWordlePuzzle();
+			}, 300);
+		} else {
+			currentAttempt++;
+			currentTile = 0;
+			if (currentAttempt >= maxAttempts) {
+				recordWordleWrongAnswer(currentGuess);
+				setTimeout(() => {
+					alert(`Gagal! Jawapan sebenar ialah: ${targetWord}`);
+					nextWordlePuzzle();
+				}, 300);
+			}
+		}
+	}
+
+	function recordWordleWrongAnswer(lastGuess) {
+		wrongAnswersHistory.push({
+			soalan: `Perkataan ${targetWord.length} Huruf`,
+			jawapanPengguna: lastGuess || "Salah Teka",
+			jawapanBetul: targetWord
+		});
+	}
+
+	function nextWordlePuzzle() {
+		// Terus hentikan masa & bawa ke skrin keputusan selepas 1 soalan selesai
+		clearInterval(wordleStopwatch);
+		showResult(false);
 	}
 
     function setupVirtualKeyboard() {
@@ -1254,64 +1309,7 @@
         }
     }
 
-    function checkWordleGuess() {
-		const currentGuess = guessRows[currentAttempt].join('');
-		const targetArr = targetWord.split('');
-
-		for (let i = 0; i < wordLen; i++) {
-			const tile = document.getElementById(`row-${currentAttempt}-tile-${i}`);
-			const letter = currentGuess[i];
-
-			if (letter === targetArr[i]) {
-				tile.classList.add('correct');
-				targetArr[i] = null;
-			} else if (targetArr.includes(letter)) {
-				tile.classList.add('present');
-				targetArr[targetArr.indexOf(letter)] = null;
-			} else {
-				tile.classList.add('absent');
-			}
-		}
-
-		if (currentGuess === targetWord) {
-			score++;
-			setTimeout(() => {
-				alert("Tahniah! Tekaan anda betul! 🎉");
-				nextWordlePuzzle();
-			}, 300);
-		} else {
-			currentAttempt++;
-			currentTile = 0;
-			if (currentAttempt >= maxAttempts) {
-				recordWordleWrongAnswer(currentGuess);
-				setTimeout(() => {
-					alert(`Gagal! Jawapan sebenar ialah: ${targetWord}`);
-					nextWordlePuzzle();
-				}, 300);
-			}
-		}
-	}
 	
-	function recordWordleWrongAnswer(lastGuess) {
-		const item = wordleQuestions[currentWordleIndex];
-		wrongAnswersHistory.push({
-			soalan: item.soalan,
-			jawapanPengguna: lastGuess || "Salah Teka",
-			jawapanBetul: targetWord
-		});
-	}
-
-	function nextWordlePuzzle() {
-		currentWordleIndex++;
-		if (currentWordleIndex < wordleQuestions.length) {
-			loadWordlePuzzle();
-		} else {
-			// Hentikan stopwatch apabila 5 puzzle selesai
-			clearInterval(wordleStopwatch);
-			// Tunjukkan skrin keputusan dan simpan ke leaderboard
-			showResult(false);
-		}
-	}
 </script>
 
 </body>
