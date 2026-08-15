@@ -4,6 +4,7 @@
 import redis
 import os
 import json
+import re
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
@@ -506,6 +507,33 @@ QUIZ_DATA = {
         {"id": 70, "soalan": "Apakah hukum solat bagi orang yang menanggung najis yang tidak dimaafkan pada pakaiannya tetapi dia LUPA atau TIDAK TAHU kewujudan najis tersebut sehingga selesai solat?", "pilihan": ["Sah dan tidak perlu qada", "Wajib diulangi/diqada solatnya mengikut Mazhab Syafi'i", "Sunat sujud sahwi sahaja", "Harus memilih untuk ulangi atau tidak"], "jawapan": 1}
     ]
 }
+
+@app.route('/api/wordle-soalan', methods=['GET'])
+def get_wordle_soalan():
+    all_questions = []
+    
+    # Kumpulkan semua soalan dari semua kategori
+    for sub_cat, q_list in QUIZ_DATA.get('rukun', {}).items():
+        all_questions.extend(q_list)
+    all_questions.extend(QUIZ_DATA.get('sejarah', []))
+    all_questions.extend(QUIZ_DATA.get('solat_fardu', []))
+    
+    # Tapis soalan yang mempunyai jawapan betul <= 10 huruf (abaikan kurungan/simbol)
+    valid_wordle = []
+    for q in all_questions:
+        jawapan_text = q['pilihan'][q['jawapan']]
+        # Bersihkan perkataan daripada sebarang simbol atau perkataan dalam kurungan
+        clean_word = re.sub(r'\([^)]*\)', '', jawapan_text).strip().upper()
+        clean_word = re.sub(r'[^A-Z]', '', clean_word) # Hanya ambil huruf A-Z sahaja
+        
+        # Pastikan huruf berada antara 3 hingga 10 huruf
+        if 3 <= len(clean_word) <= 10:
+            valid_wordle.append({
+                "soalan": q['soalan'],
+                "jawapan": clean_word
+            })
+            
+    return jsonify({"data": valid_wordle})
 
 # =========================================================
 # FUNGSI MEMPEROLEH SAMBUNGAN REDIS (DYNAMIC CONNECT)

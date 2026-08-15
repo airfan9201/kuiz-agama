@@ -14,6 +14,9 @@
             --danger-color: #ef4444;
             --success-color: #10b981;
             --whatsapp-color: #25d366;
+            --correct-color: #22c55e;
+            --present-color: #eab308;
+            --absent-color: #64748b;
         }
 
         * {
@@ -124,7 +127,6 @@
             border: 1px solid #fca5a5;
         }
 
-        /* Kotak Nyawa Survival */
         .lives-box {
             background-color: #fef2f2;
             color: #dc2626;
@@ -286,21 +288,9 @@
 			to { transform: scale(1); opacity: 1; }
 		}
 
-		.modal-header .fire-icon {
-			font-size: 2.5rem;
-		}
-
-		.modal-header h3 {
-			margin: 5px 0 15px 0;
-			font-size: 1.25rem;
-			color: #1e293b;
-		}
-
-		.challenge-label {
-			font-size: 0.9rem;
-			color: #64748b;
-			margin-bottom: 10px;
-		}
+		.modal-header .fire-icon { font-size: 2.5rem; }
+		.modal-header h3 { margin: 5px 0 15px 0; font-size: 1.25rem; color: #1e293b; }
+		.challenge-label { font-size: 0.9rem; color: #64748b; margin-bottom: 10px; }
 
 		.leader-box {
 			background: linear-gradient(135deg, #fef3c7, #fde68a);
@@ -310,22 +300,9 @@
 			margin-bottom: 15px;
 		}
 
-		.leader-details {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-		}
-
-		.leader-name {
-			font-weight: bold;
-			font-size: 1.1rem;
-			color: #78350f;
-		}
-
-		.leader-stat {
-			font-size: 0.95rem;
-			color: #92400e;
-		}
+		.leader-details { display: flex; justify-content: space-between; align-items: center; }
+		.leader-name { font-weight: bold; font-size: 1.1rem; color: #78350f; }
+		.leader-stat { font-size: 0.95rem; color: #92400e; }
 
 		.no-leader-box {
 			background: #f1f5f9;
@@ -337,12 +314,7 @@
 			margin-bottom: 15px;
 		}
 
-		.challenge-subtext {
-			font-size: 0.85rem;
-			font-weight: 600;
-			color: #d97706;
-			margin-bottom: 20px;
-		}
+		.challenge-subtext { font-size: 0.85rem; font-weight: 600; color: #d97706; margin-bottom: 20px; }
 
 		.btn-primary-start {
 			width: 100%;
@@ -383,44 +355,23 @@
 			text-align: center;
 		}
 
-		.category-card:hover {
-			transform: translateY(-5px);
-			box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-		}
-
+		.category-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
 		.card-rukun { border-color: #3b82f6; background: #eff6ff; }
 		.card-rukun:hover { background: #dbeafe; }
-
 		.card-sejarah { border-color: #f59e0b; background: #fffbeb; }
 		.card-sejarah:hover { background: #fef3c7; }
-
 		.card-solat { border-color: #10b981; background: #ecfdf5; }
 		.card-solat:hover { background: #d1fae5; }
-
-		/* Style Kad Survival (Mod Cabut Nyawa) */
 		.card-survival { border-color: #ef4444; background: #fef2f2; }
 		.card-survival:hover { background: #fee2e2; }
+		.card-wordle { border-color: #8b5cf6; background: #f5f3ff; }
+		.card-wordle:hover { background: #ede9fe; }
 
-		.card-icon {
-			font-size: 3rem;
-			margin-bottom: 10px;
-		}
-
-		.card-title {
-			font-size: 1.1rem;
-			font-weight: 700;
-			color: #1e293b;
-			margin-bottom: 4px;
-		}
-
-		.card-desc {
-			font-size: 0.8rem;
-			color: #64748b;
-		}
+		.card-icon { font-size: 3rem; margin-bottom: 10px; }
+		.card-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+		.card-desc { font-size: 0.8rem; color: #64748b; }
 		
-		/* --- ANIMASI MOD CEMAS (5 SAAT TERAKHIR) --- */
-
-		/* Pemasa Berdegup */
+		/* --- ANIMASI MOD CEMAS --- */
 		.timer-box.panic {
 			background-color: #ef4444 !important;
 			color: #ffffff !important;
@@ -434,7 +385,6 @@
 			100% { transform: scale(1.15); box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); }
 		}
 
-		/* Skrin Bergetar & Cahaya Merah Amaran */
 		.container.panic-mode {
 			animation: screenShake 0.3s infinite, redPulse 0.8s infinite alternate;
 			border: 3px solid #ef4444;
@@ -453,6 +403,65 @@
 			0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
 			100% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.8); }
 		}
+
+        /* --- STYLES UNTUK MOD TEKA PERKATAAN (WORDLE) --- */
+        .wordle-board {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 15px 0;
+            align-items: center;
+        }
+
+        .wordle-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .wordle-tile {
+            width: 38px;
+            height: 38px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            background: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .wordle-tile.correct { background: var(--correct-color); color: white; border-color: var(--correct-color); }
+        .wordle-tile.present { background: var(--present-color); color: white; border-color: var(--present-color); }
+        .wordle-tile.absent { background: var(--absent-color); color: white; border-color: var(--absent-color); }
+
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 15px;
+        }
+
+        .kb-row {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .kb-key {
+            padding: 10px 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #1e293b;
+            min-width: 30px;
+            border: none;
+            cursor: pointer;
+        }
+        .kb-key.wide { min-width: 55px; font-size: 0.75rem; }
     </style>
 </head>
 <body>
@@ -465,36 +474,38 @@
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
-			<!-- Kad Rukun -->
 			<div class="category-card card-rukun" onclick="showSubMenu('rukun')">
 				<div class="card-icon">📖</div>
 				<div class="card-title">Rukun</div>
 				<div class="card-desc">Iman, Islam, Solat & Lain-lain</div>
 			</div>
 
-			<!-- Kad Sejarah Nabi -->
 			<div class="category-card card-sejarah" onclick="prepareQuiz('sejarah', '', 'Sejarah Nabi SAW')">
 				<div class="card-icon">🕌</div>
 				<div class="card-title">Sejarah Nabi</div>
 				<div class="card-desc">Kisah Rasulullah SAW</div>
 			</div>
 
-			<!-- Kad Solat Fardu -->
 			<div class="category-card card-solat" onclick="prepareQuiz('solat_fardu', '', 'Solat Fardu')">
 				<div class="card-icon">🕋</div>
 				<div class="card-title">Solat Fardu</div>
 				<div class="card-desc">Panduan & Rukun Solat</div>
 			</div>
 
-			<!-- KAD MOD CABUT NYAWA (SURVIVAL) RAWAK -->
 			<div class="category-card card-survival" onclick="prepareQuiz('survival', '', 'Cabut Nyawa (Survival)', true)">
 				<div class="card-icon">💀</div>
 				<div class="card-title">Cabut Nyawa</div>
-				<div class="card-desc">Soalan Rawak dari Semua Kategori! 3 Nyawa sahaja!</div>
+				<div class="card-desc">Soalan Rawak! 3 Nyawa sahaja!</div>
+			</div>
+
+            <!-- KATEGORI BAHARU: TEKA PERKATAAN (WORDLE) -->
+			<div class="category-card card-wordle" onclick="startWordleGame()">
+				<div class="card-icon">🧩</div>
+				<div class="card-title">Teka Perkataan</div>
+				<div class="card-desc">Teka Jawapan Kuiz Max 10 Huruf!</div>
 			</div>
 		</div>
 
-		<!-- Paparan Leaderboard di Menu Utama -->
 		<div class="leaderboard-box">
 			<div class="leaderboard-title">
 				<span>🏆 Carta Kedudukan Global</span>
@@ -543,22 +554,35 @@
 		<button class="back-btn" style="width: 100%; margin-top: 20px;" onclick="showMainMenu()">⬅️ Kembali</button>
 	</div>
 
-    <!-- Skrin Soalan -->
+    <!-- Skrin Soalan Standard -->
     <div id="quiz-screen" class="hidden">
         <div class="quiz-header">
             <span id="progress">Soalan 1 daripada 20</span>
-            
-            <!-- Elemen Nyawa (Survival) -->
             <div id="lives-container" class="lives-box hidden">
                 ❤️ <span id="lives-count">3</span>
             </div>
-
             <div id="timer-box" class="timer-box">
                 ⏱️ Masa: <span id="time-left">15</span>s
             </div>
         </div>
         <div class="question-text" id="question"></div>
         <div class="btn-grid" id="options"></div>
+    </div>
+
+    <!-- SKRIN TEKA PERKATAAN (WORDLE) -->
+    <div id="wordle-screen" class="hidden">
+        <h2>🧩 Teka Jawapan Perkataan</h2>
+        <p id="wordle-hint" class="question-text" style="margin-top:10px; font-size:1rem; text-align:center;"></p>
+        
+        <div id="wordle-board" class="wordle-board"></div>
+
+        <div class="keyboard">
+            <div class="kb-row" id="kb-row-1"></div>
+            <div class="kb-row" id="kb-row-2"></div>
+            <div class="kb-row" id="kb-row-3"></div>
+        </div>
+
+        <button class="back-btn" style="width:100%;" onclick="showMainMenu()">⬅️ Menu Utama</button>
     </div>
 
     <!-- Skrin Keputusan -->
@@ -568,21 +592,12 @@
 		<div class="score-box" id="score"></div>
 
 		<div id="title-badge" style="
-			font-size: 1.2rem; 
-			font-weight: 700; 
-			margin: 12px 0; 
-			padding: 10px 15px; 
-			background-color: #f0fdf4; 
-			color: #166534; 
-			border: 2px dashed #22c55e; 
-			border-radius: 10px;
-			display: inline-block;
-		">
+			font-size: 1.2rem; font-weight: 700; margin: 12px 0; padding: 10px 15px; 
+			background-color: #f0fdf4; color: #166534; border: 2px dashed #22c55e; border-radius: 10px; display: inline-block;">
 		</div>
 
 		<p id="time-taken-text" style="color: #64748b; font-size: 0.95rem;"></p>
 
-		<!-- Form Simpan Rekod -->
 		<div class="save-score-form" id="save-form">
 			<p style="font-size: 0.9rem; margin-bottom: 8px; font-weight: 600;">Masukkan nama untuk rekodkan skor:</p>
 			<input type="text" id="player-name" placeholder="Nama anda..." maxlength="15">
@@ -630,7 +645,6 @@
     let wrongAnswersHistory = [];
 	let isAnswering = false; 
 
-    // PEMBOLEHUBAH BAHARU UNTUK MOD SURVIVAL
     let isSurvivalMode = false;
     let lives = 3;
 
@@ -639,8 +653,19 @@
     let pendingCategoryName = '';
     let pendingIsSurvival = false;
 
+    // VARIABLE KHAS MOD TEKA PERKATAAN
+    let wordleQuestions = [];
+    let currentWordleIndex = 0;
+    let targetWord = "";
+    let wordLen = 0;
+    let maxAttempts = 5;
+    let currentAttempt = 0;
+    let currentTile = 0;
+    let guessRows = [];
+
     document.addEventListener("DOMContentLoaded", () => {
         fetchGlobalLeaderboard();
+        setupVirtualKeyboard();
     });
 	
 	function getBadgeTitle(score, totalQuestions) {
@@ -652,15 +677,10 @@
             return "🪦 Korban Cabut Nyawa";
         }
 
-		if (percentage === 100) {
-			return "👑 Muffal / Ustaz Kuiz";
-		} else if (percentage >= 70) {
-			return "📚 Penuntut Ilmu Dedikasi";
-		} else if (percentage >= 40) {
-			return "🌱 Peringkat Permulaan";
-		} else {
-			return "💡 Perlu Ulangkaji Lagi";
-		}
+		if (percentage === 100) return "👑 Muffal / Ustaz Kuiz";
+		else if (percentage >= 70) return "📚 Penuntut Ilmu Dedikasi";
+		else if (percentage >= 40) return "🌱 Peringkat Permulaan";
+		else return "💡 Perlu Ulangkaji Lagi";
 	}
 
 	function getDeviceId() {
@@ -680,7 +700,6 @@
             const leaderboard = responseData.data || [];
 
             listContainer.innerHTML = '';
-
             if (leaderboard.length === 0) {
                 listContainer.innerHTML = `<p style="font-size:0.85rem; color:#94a3b8; text-align:center; padding:10px;">Belum ada rekod terpusat tersimpan.</p>`;
                 return;
@@ -689,7 +708,6 @@
             leaderboard.forEach((item, index) => {
                 const li = document.createElement('li');
                 li.className = 'leaderboard-item';
-                
                 let medal = `#${index + 1}`;
                 if (index === 0) medal = '🥇';
                 if (index === 1) medal = '🥈';
@@ -730,7 +748,6 @@
             const res = await fetch('/api/leaderboard');
             const responseData = await res.json();
             const allLeaderboard = responseData.data || [];
-
             const categoryLeaders = allLeaderboard.filter(item => item.kategori === categoryName);
 
             if (categoryLeaders.length > 0) {
@@ -748,11 +765,7 @@
                 `;
                 targetText.innerText = `🔥 Sasaran: Dapatkan ${topPlayer.skor}/20 dalam masa kurang daripada ${topPlayer.masa} saat!`;
             } else {
-                leaderBox.innerHTML = `
-                    <div class="no-leader-box">
-                        <span>🌟 Belum ada rekod tersimpan untuk kategori ini!</span>
-                    </div>
-                `;
+                leaderBox.innerHTML = `<div class="no-leader-box"><span>🌟 Belum ada rekod tersimpan!</span></div>`;
                 targetText.innerText = `👑 Peluang emas! Jadilah pemegang rekod pertama!`;
             }
         } catch (err) {
@@ -779,10 +792,7 @@
 
 	async function saveScore() {
 		const rawName = document.getElementById('player-name').value.trim();
-		if (!rawName) {
-			alert("Sila masukkan nama anda!");
-			return;
-		}
+		if (!rawName) { alert("Sila masukkan nama anda!"); return; }
 
 		const deviceId = getDeviceId();
 		const formattedUsername = `${rawName}_${deviceId}`;
@@ -820,6 +830,7 @@
         document.getElementById('sub-menu-rukun').classList.add('hidden');
         document.getElementById('quiz-screen').classList.add('hidden');
         document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('wordle-screen').classList.add('hidden');
     }
 
     function showSubMenu(cat) {
@@ -842,7 +853,7 @@
         try {
             currentCategoryName = categoryName;
             isSurvivalMode = isSurvival;
-            lives = 3; // Reset nyawa ke 3
+            lives = 3;
 
             let url = `/api/soalan?kategori=${category}`;
             if (subCategory) url += `&sub=${subCategory}`;
@@ -862,7 +873,6 @@
             totalTimeTaken = 0;
             wrongAnswersHistory = [];
 
-            // Tetapkan paparan nyawa mengikut mod
             const livesBox = document.getElementById('lives-container');
             if (isSurvivalMode) {
                 livesBox.classList.remove('hidden');
@@ -881,53 +891,47 @@
         }
     }
 
-   function renderQuestion() {
-    clearInterval(timer);
-    isAnswering = false;
-    
-    // 1. Dapatkan elemen untuk kesan cemas
-    const container = document.querySelector('.container');
-    const timerBox = document.getElementById('timer-box');
-    
-    // 2. Bersihkan kelas cemas/warning setiap kali soalan baharu bermula
-    container.classList.remove('panic-mode');
-    timerBox.classList.remove('panic', 'warning');
-    
-    timeLeft = 15; // Masa asal anda
-    document.getElementById('time-left').innerText = timeLeft;
-
-    timer = setInterval(() => {
-        timeLeft--;
-        totalTimeTaken++; 
+    function renderQuestion() {
+        clearInterval(timer);
+        isAnswering = false;
+        
+        const container = document.querySelector('.container');
+        const timerBox = document.getElementById('timer-box');
+        
+        container.classList.remove('panic-mode');
+        timerBox.classList.remove('panic', 'warning');
+        
+        timeLeft = 15;
         document.getElementById('time-left').innerText = timeLeft;
 
-        // 3. LOGIK ANIMASI CEMAS: Apabila masa <= 5 saat
-        if (timeLeft <= 5 && timeLeft > 0) {
-            timerBox.classList.add('panic');
-            container.classList.add('panic-mode');
-        }
+        timer = setInterval(() => {
+            timeLeft--;
+            totalTimeTaken++; 
+            document.getElementById('time-left').innerText = timeLeft;
 
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            
-            // Bersihkan kesan cemas bila masa tamat
-            container.classList.remove('panic-mode');
-            timerBox.classList.remove('panic');
-
-            recordWrongAnswer(null, true);
-            
-            // Tolak nyawa jika masa habis dalam Survival Mode
-            if (isSurvivalMode) {
-                lives--;
-                document.getElementById('lives-count').innerText = lives;
-                if (lives <= 0) {
-                    showResult(true);
-                    return;
-                }
+            if (timeLeft <= 5 && timeLeft > 0) {
+                timerBox.classList.add('panic');
+                container.classList.add('panic-mode');
             }
-            nextQuestion();
-        }
-    }, 1000);
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                container.classList.remove('panic-mode');
+                timerBox.classList.remove('panic');
+
+                recordWrongAnswer(null, true);
+                
+                if (isSurvivalMode) {
+                    lives--;
+                    document.getElementById('lives-count').innerText = lives;
+                    if (lives <= 0) {
+                        showResult(true);
+                        return;
+                    }
+                }
+                nextQuestion();
+            }
+        }, 1000);
 
 		const q = currentQuestions[currentQuestionIndex];
 		document.getElementById('progress').innerText = `Soalan ${currentQuestionIndex + 1} daripada ${currentQuestions.length}`;
@@ -950,37 +954,30 @@
 		isAnswering = true; 
 
 		clearInterval(timer);
-
-		// 1. Hentikan animasi cemas serta-merta sebaik soalan dijawab
 		document.querySelector('.container').classList.remove('panic-mode');
 		document.getElementById('timer-box').classList.remove('panic');
 
 		totalTimeTaken += (15 - timeLeft);
 		
-		// 2. Kunci semua butang supaya tidak boleh ditekan banyak kali
 		const allButtons = document.querySelectorAll('.option-btn');
 		allButtons.forEach(btn => btn.disabled = true);
 		
 		const q = currentQuestions[currentQuestionIndex];
 
-		// 3. TUKAR WARNA BUTANG (MAKLUM BALAS VISUAL):
 		if (selectedIndex === q.jawapan) {
 			score++;
-			// Jika betul, tukar butang yang ditekan jadi warna Hijau
 			if (clickedBtn) {
 				clickedBtn.style.backgroundColor = '#10b981';
 				clickedBtn.style.color = '#ffffff';
 				clickedBtn.style.borderColor = '#059669';
 			}
 		} else {
-			// Jika salah, tukar butang yang ditekan jadi warna Merah
 			if (clickedBtn) {
 				clickedBtn.style.backgroundColor = '#ef4444';
 				clickedBtn.style.color = '#ffffff';
 				clickedBtn.style.borderColor = '#dc2626';
 			}
 
-			// Tunjukkan jawapan SEBENAR yang betul dalam warna Hijau
 			if (allButtons[q.jawapan]) {
 				allButtons[q.jawapan].style.backgroundColor = '#10b981';
 				allButtons[q.jawapan].style.color = '#ffffff';
@@ -989,25 +986,17 @@
 
 			recordWrongAnswer(selectedIndex, false);
 			
-			// LOGIK SURVIVAL: Kurangkan nyawa jika salah
 			if (isSurvivalMode) {
 				lives--;
 				document.getElementById('lives-count').innerText = lives;
-				
-				// Jika nyawa habis, tamat permainan serta-merta
 				if (lives <= 0) {
-					setTimeout(() => {
-						showResult(true);
-					}, 200); // Beri masa 0.2 saat untuk pemain sempat nampak jawapan betul
+					setTimeout(() => { showResult(true); }, 200);
 					return;
 				}
 			}
 		}
 
-		// Beri masa 0.8 saat (800ms) sebelum berpindah ke soalan seterusnya
-		setTimeout(() => {
-			nextQuestion();
-		}, 600);
+		setTimeout(() => { nextQuestion(); }, 600);
 	}
 
     function recordWrongAnswer(selectedIndex, isTimeout) {
@@ -1038,9 +1027,9 @@
 		const badgeText = getBadgeTitle(score, currentQuestions.length);
         clearInterval(timer);
         document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('wordle-screen').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
         
-        // Tukar tajuk jika Game Over (Survival Mode)
         const resultTitle = document.getElementById('result-title');
         if (isGameOver) {
             resultTitle.innerText = "💀 GAME OVER (Nyawa Habis!)";
@@ -1053,7 +1042,6 @@
         document.getElementById('score').innerText = `Skor Anda: ${score} / ${currentQuestions.length}`;
 		document.getElementById('title-badge').innerHTML = `Gelaran Anda:<br><span style="font-size: 1.5rem;">${badgeText}</span>`;		
         document.getElementById('time-taken-text').innerText = `⏱️ Jumlah Masa: ${totalTimeTaken} Saat`;
-
         document.getElementById('save-form').style.display = 'block';
 
         const reviewContainer = document.getElementById('review-container');
@@ -1094,6 +1082,157 @@
 		const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
 		window.open(whatsappUrl, '_blank');
 	}
+
+    /* --- LOGIK PERMAINAN TEKA PERKATAAN (WORDLE) --- */
+
+    async function startWordleGame() {
+        try {
+            const res = await fetch('/api/wordle-soalan');
+            const data = await res.json();
+            wordleQuestions = shuffleArray(data.data);
+
+            if (wordleQuestions.length === 0) {
+                alert("Tiada perkataan ditemui.");
+                return;
+            }
+
+            currentWordleIndex = 0;
+            currentCategoryName = "Teka Perkataan";
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('wordle-screen').classList.remove('hidden');
+            
+            loadWordlePuzzle();
+        } catch (e) {
+            alert("Ralat memuatkan soalan Teka Perkataan!");
+        }
+    }
+
+    function loadWordlePuzzle() {
+        const item = wordleQuestions[currentWordleIndex];
+        targetWord = item.jawapan;
+        wordLen = targetWord.length;
+        currentAttempt = 0;
+        currentTile = 0;
+
+        document.getElementById('wordle-hint').innerText = `💡 Pembayang: ${item.soalan} (${wordLen} Huruf)`;
+        
+        // Cipta grid petak mengikut panjang perkataan (wordLen)
+        const board = document.getElementById('wordle-board');
+        board.innerHTML = '';
+        guessRows = Array(maxAttempts).fill().map(() => Array(wordLen).fill(''));
+
+        for (let r = 0; r < maxAttempts; r++) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'wordle-row';
+            rowDiv.id = `row-${r}`;
+            for (let c = 0; c < wordLen; c++) {
+                const tileDiv = document.createElement('div');
+                tileDiv.className = 'wordle-tile';
+                tileDiv.id = `row-${r}-tile-${c}`;
+                rowDiv.appendChild(tileDiv);
+            }
+            board.appendChild(rowDiv);
+        }
+    }
+
+    function setupVirtualKeyboard() {
+        const row1 = ["Q","W","E","R","T","Y","U","I","O","P"];
+        const row2 = ["A","S","D","F","G","H","J","K","L"];
+        const row3 = ["ENTER","Z","X","C","V","B","N","M","DEL"];
+
+        const r1 = document.getElementById('kb-row-1');
+        const r2 = document.getElementById('kb-row-2');
+        const r3 = document.getElementById('kb-row-3');
+
+        row1.forEach(k => r1.appendChild(createKeyBtn(k)));
+        row2.forEach(k => r2.appendChild(createKeyBtn(k)));
+        row3.forEach(k => r3.appendChild(createKeyBtn(k)));
+
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('wordle-screen').classList.contains('hidden')) return;
+            let key = e.key.toUpperCase();
+            if (key === 'ENTER') handleKeyPress('ENTER');
+            else if (key === 'BACKSPACE') handleKeyPress('DEL');
+            else if (/^[A-Z]$/.test(key)) handleKeyPress(key);
+        });
+    }
+
+    function createKeyBtn(key) {
+        const btn = document.createElement('button');
+        btn.className = `kb-key ${key.length > 1 ? 'wide' : ''}`;
+        btn.innerText = key;
+        btn.onclick = () => handleKeyPress(key);
+        return btn;
+    }
+
+    function handleKeyPress(key) {
+        if (currentAttempt >= maxAttempts) return;
+
+        if (key === 'DEL') {
+            if (currentTile > 0) {
+                currentTile--;
+                guessRows[currentAttempt][currentTile] = '';
+                document.getElementById(`row-${currentAttempt}-tile-${currentTile}`).innerText = '';
+            }
+        } else if (key === 'ENTER') {
+            if (currentTile === wordLen) {
+                checkWordleGuess();
+            } else {
+                alert(`Sila lengkapkan ${wordLen} huruf terlebih dahulu!`);
+            }
+        } else if (currentTile < wordLen) {
+            guessRows[currentAttempt][currentTile] = key;
+            document.getElementById(`row-${currentAttempt}-tile-${currentTile}`).innerText = key;
+            currentTile++;
+        }
+    }
+
+    function checkWordleGuess() {
+        const currentGuess = guessRows[currentAttempt].join('');
+        const targetArr = targetWord.split('');
+
+        for (let i = 0; i < wordLen; i++) {
+            const tile = document.getElementById(`row-${currentAttempt}-tile-${i}`);
+            const letter = currentGuess[i];
+
+            if (letter === targetArr[i]) {
+                tile.classList.add('correct');
+                targetArr[i] = null;
+            } else if (targetArr.includes(letter)) {
+                tile.classList.add('present');
+                targetArr[targetArr.indexOf(letter)] = null;
+            } else {
+                tile.classList.add('absent');
+            }
+        }
+
+        if (currentGuess === targetWord) {
+            setTimeout(() => {
+                alert("Tahniah! Tekaan anda betul! 🎉");
+                currentWordleIndex++;
+                if (currentWordleIndex < wordleQuestions.length) {
+                    loadWordlePuzzle();
+                } else {
+                    alert("Tahniah! Anda telah tamatkan semua perkataan!");
+                    showMainMenu();
+                }
+            }, 300);
+        } else {
+            currentAttempt++;
+            currentTile = 0;
+            if (currentAttempt >= maxAttempts) {
+                setTimeout(() => {
+                    alert(`Gagal! Jawapan sebenar ialah: ${targetWord}`);
+                    currentWordleIndex++;
+                    if (currentWordleIndex < wordleQuestions.length) {
+                        loadWordlePuzzle();
+                    } else {
+                        showMainMenu();
+                    }
+                }, 300);
+            }
+        }
+    }
 </script>
 
 </body>
