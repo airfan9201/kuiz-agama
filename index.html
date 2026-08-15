@@ -1214,43 +1214,59 @@
 	}
 
 	// FUNGSI KHAS: Buka 1 Aksara dan Tambah 10 Saat Penalti
+	// FUNGSI KHAS: Buka 1 Aksara (Mengelakkan kotak yang sudah betul/hijau)
 	function revealOneLetter() {
 		if (revealedLettersCount >= 3) {
 			alert("Anda telah mencapai had maksima 3 aksara bantuan!");
 			return;
 		}
 
-		// Cari kedudukan (index) aksara yang belum diteka betul dalam percubaan semasa
+		// Cari indeks kedudukan aksara yang BELUM BETUL (belum ada kedudukan tepat yang hijau)
 		let unrevealedIndices = [];
+		
 		for (let i = 0; i < wordLen; i++) {
-			if (guessRows[currentAttempt][i] !== targetWord[i]) {
+			let isAlreadyCorrect = false;
+
+			// Semak dari percubaan terdahulu sehingga percubaan semasa, sama ada petak ini sudah berwarna hijau (correct)
+			for (let r = 0; r <= currentAttempt; r++) {
+				const tile = document.getElementById(`row-${r}-tile-${i}`);
+				if (tile && tile.classList.contains('correct')) {
+					isAlreadyCorrect = true;
+					break;
+				}
+			}
+
+			// Jika huruf pada indeks ini belum diteka betul / belum hijau, masukkan ke senarai calon bantuan
+			if (!isAlreadyCorrect && guessRows[currentAttempt][i] !== targetWord[i]) {
 				unrevealedIndices.push(i);
 			}
 		}
 
 		if (unrevealedIndices.length === 0) {
-			alert("Semua aksara telah ditemui!");
+			alert("Semua aksara yang tinggal telah diteka dengan betul!");
 			return;
 		}
 
-		// Pilih 1 aksara rawak yang belum dibuka
+		// Pilih 1 aksara rawak daripada senarai kotak yang BELUM hijau
 		const randomIndex = unrevealedIndices[Math.floor(Math.random() * unrevealedIndices.length)];
 		const revealedLetter = targetWord[randomIndex];
 
-		// Isi aksara tersebut ke dalam petak percubaan semasa
+		// Isikan aksara ke dalam petak percubaan semasa
 		guessRows[currentAttempt][randomIndex] = revealedLetter;
+		currentTile = Math.max(currentTile, randomIndex + 1); // Kemaskini penuding tile
+
 		const tile = document.getElementById(`row-${currentAttempt}-tile-${randomIndex}`);
 		if (tile) {
 			tile.innerText = revealedLetter;
-			tile.style.borderColor = "#8b5cf6"; // Warna penanda aksara bantuan
+			tile.style.borderColor = "#8b5cf6"; // Warna penanda bantuan (Ungu)
 			tile.style.color = "#8b5cf6";
 		}
 
-		// Tambah 10 saat penalti pada jumlah masa
+		// Penalti +10 saat
 		totalTimeTaken += 10;
 		revealedLettersCount++;
 
-		// Kemaskini paparan masa & baki butang bantuan
+		// Kemaskini paparan pemasa & baki butang bantuan
 		document.getElementById('wordle-timer-box').innerText = totalTimeTaken;
 		document.getElementById('reveal-count').innerText = 3 - revealedLettersCount;
 
