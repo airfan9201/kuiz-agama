@@ -512,22 +512,19 @@ QUIZ_DATA = {
 def get_wordle_soalan():
     all_questions = []
     
-    # Kumpulkan semua soalan dari semua kategori
     for sub_cat, q_list in QUIZ_DATA.get('rukun', {}).items():
         all_questions.extend(q_list)
     all_questions.extend(QUIZ_DATA.get('sejarah', []))
     all_questions.extend(QUIZ_DATA.get('solat_fardu', []))
     
-    # Tapis soalan yang mempunyai jawapan betul <= 10 huruf (abaikan kurungan/simbol)
     valid_wordle = []
     for q in all_questions:
         jawapan_text = q['pilihan'][q['jawapan']]
-        # Bersihkan perkataan daripada sebarang simbol atau perkataan dalam kurungan
         clean_word = re.sub(r'\([^)]*\)', '', jawapan_text).strip().upper()
-        clean_word = re.sub(r'[^A-Z]', '', clean_word) # Hanya ambil huruf A-Z sahaja
+        clean_word = re.sub(r'[^A-Z]', '', clean_word)
         
-        # Pastikan huruf berada antara 3 hingga 10 huruf
-        if 3 <= len(clean_word) <= 10:
+        # HANYA AMBIL PERKATAAN 3 HINGGA 6 HURUF SAHAJA
+        if 3 <= len(clean_word) <= 6:
             valid_wordle.append({
                 "soalan": q['soalan'],
                 "jawapan": clean_word

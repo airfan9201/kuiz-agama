@@ -498,11 +498,11 @@
 				<div class="card-desc">Soalan Rawak! 3 Nyawa sahaja!</div>
 			</div>
 
-            <!-- KATEGORI BAHARU: TEKA PERKATAAN (WORDLE) -->
+			<!-- KATEGORI BAHARU: TEKA PERKATAAN (WORDLE) -->
 			<div class="category-card card-wordle" onclick="startWordleGame()">
 				<div class="card-icon">🧩</div>
 				<div class="card-title">Teka Perkataan</div>
-				<div class="card-desc">Teka Jawapan Kuiz Max 10 Huruf!</div>
+				<div class="card-desc">Tanpa Pembayang! Max 6 Huruf!</div>
 			</div>
 		</div>
 
@@ -1180,7 +1180,8 @@
 		currentAttempt = 0;
 		currentTile = 0;
 
-		document.getElementById('wordle-hint').innerText = `💡 Soalan ${currentWordleIndex + 1}/${wordleQuestions.length}: ${item.soalan} (${wordLen} Huruf)`;
+		// PAPARAN TANPA PEMBAYANG (Hanya tunjuk bilangan soalan & bilangan huruf)
+		document.getElementById('wordle-hint').innerText = `🧩 Perkataan ${currentWordleIndex + 1}/${wordleQuestions.length} (${wordLen} Huruf)`;
 
 		// Cipta grid petak mengikut panjang perkataan (wordLen)
 		const board = document.getElementById('wordle-board');
