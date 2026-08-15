@@ -1213,21 +1213,20 @@
 		}
 	}
 
-	// FUNGSI KHAS: Buka 1 Aksara dan Tambah 10 Saat Penalti
-	// FUNGSI KHAS: Buka 1 Aksara (Mengelakkan kotak yang sudah betul/hijau)
+	// FUNGSI KHAS: Buka 1 Aksara (Mengelakkan kotak yang sudah hijau + reset cursor)
 	function revealOneLetter() {
 		if (revealedLettersCount >= 3) {
 			alert("Anda telah mencapai had maksima 3 aksara bantuan!");
 			return;
 		}
 
-		// Cari indeks kedudukan aksara yang BELUM BETUL (belum ada kedudukan tepat yang hijau)
+		// Cari indeks kedudukan aksara yang BELUM BETUL (belum hijau)
 		let unrevealedIndices = [];
 		
 		for (let i = 0; i < wordLen; i++) {
 			let isAlreadyCorrect = false;
 
-			// Semak dari percubaan terdahulu sehingga percubaan semasa, sama ada petak ini sudah berwarna hijau (correct)
+			// Semak jika mana-mana baris terdahulu sudah hijau untuk petak ini
 			for (let r = 0; r <= currentAttempt; r++) {
 				const tile = document.getElementById(`row-${r}-tile-${i}`);
 				if (tile && tile.classList.contains('correct')) {
@@ -1236,7 +1235,6 @@
 				}
 			}
 
-			// Jika huruf pada indeks ini belum diteka betul / belum hijau, masukkan ke senarai calon bantuan
 			if (!isAlreadyCorrect && guessRows[currentAttempt][i] !== targetWord[i]) {
 				unrevealedIndices.push(i);
 			}
@@ -1247,13 +1245,12 @@
 			return;
 		}
 
-		// Pilih 1 aksara rawak daripada senarai kotak yang BELUM hijau
+		// Pilih 1 aksara rawak daripada senarai kotak yang belum hijau
 		const randomIndex = unrevealedIndices[Math.floor(Math.random() * unrevealedIndices.length)];
 		const revealedLetter = targetWord[randomIndex];
 
 		// Isikan aksara ke dalam petak percubaan semasa
 		guessRows[currentAttempt][randomIndex] = revealedLetter;
-		currentTile = Math.max(currentTile, randomIndex + 1); // Kemaskini penuding tile
 
 		const tile = document.getElementById(`row-${currentAttempt}-tile-${randomIndex}`);
 		if (tile) {
@@ -1261,6 +1258,13 @@
 			tile.style.borderColor = "#8b5cf6"; // Warna penanda bantuan (Ungu)
 			tile.style.color = "#8b5cf6";
 		}
+
+		// RESET INDEX CURSOR: Set semula cursor ke petak pertama yang masih KOSONG di baris ini
+		let firstEmptySlot = 0;
+		while (firstEmptySlot < wordLen && guessRows[currentAttempt][firstEmptySlot] !== '') {
+			firstEmptySlot++;
+		}
+		currentTile = firstEmptySlot;
 
 		// Penalti +10 saat
 		totalTimeTaken += 10;
