@@ -509,7 +509,11 @@
 		<div class="leaderboard-box">
 			<div class="leaderboard-title">
 				<span>🏆 Carta Kedudukan Global</span>
-				<small style="font-size: 0.75rem; color: #64748b; font-weight: normal;">(10 Teratas)</small>
+			</div>
+			<!-- Butang Penukar Tab -->
+			<div style="display: flex; gap: 8px; margin-bottom: 12px;">
+				<button id="tab-quiz-btn" style="flex:1; padding:6px; font-size:0.85rem; background:#0d9488;" onclick="filterLeaderboard('quiz')">Kuiz Utama</button>
+				<button id="tab-wordle-btn" style="flex:1; padding:6px; font-size:0.85rem; background:#6b7280;" onclick="filterLeaderboard('wordle')">Teka Perkataan</button>
 			</div>
 			<ol id="main-leaderboard" class="leaderboard-list"></ol>
 		</div>
@@ -570,20 +574,26 @@
     </div>
 
     <!-- SKRIN TEKA PERKATAAN (WORDLE) -->
-    <div id="wordle-screen" class="hidden">
-        <h2>🧩 Teka Jawapan Perkataan</h2>
-        <p id="wordle-hint" class="question-text" style="margin-top:10px; font-size:1rem; text-align:center;"></p>
-        
-        <div id="wordle-board" class="wordle-board"></div>
+	<div id="wordle-screen" class="hidden">
+		<div class="quiz-header">
+			<h2>🧩 Teka Perkataan</h2>
+			<div class="timer-box" style="background-color: #f0fdf4; color: #0d9488; border-color: #99f6e4;">
+				⏱️ Masa diambil: <span id="wordle-timer-box">0</span>s
+			</div>
+		</div>
+		
+		<p id="wordle-hint" class="question-text" style="margin-top:10px; font-size:1rem; text-align:center;"></p>
+		
+		<div id="wordle-board" class="wordle-board"></div>
 
-        <div class="keyboard">
-            <div class="kb-row" id="kb-row-1"></div>
-            <div class="kb-row" id="kb-row-2"></div>
-            <div class="kb-row" id="kb-row-3"></div>
-        </div>
+		<div class="keyboard">
+			<div class="kb-row" id="kb-row-1"></div>
+			<div class="kb-row" id="kb-row-2"></div>
+			<div class="kb-row" id="kb-row-3"></div>
+		</div>
 
-        <button class="back-btn" style="width:100%;" onclick="showMainMenu()">⬅️ Menu Utama</button>
-    </div>
+		<button class="back-btn" style="width:100%;" onclick="clearInterval(wordleStopwatch); showMainMenu();">⬅️ Menu Utama</button>
+	</div>
 
     <!-- Skrin Keputusan -->
 	<div id="result-screen" class="hidden">
@@ -692,44 +702,68 @@
 		return deviceId;
 	}
 
-    async function fetchGlobalLeaderboard() {
-        const listContainer = document.getElementById('main-leaderboard');
-        try {
-            const res = await fetch('/api/leaderboard');
-            const responseData = await res.json();
-            const leaderboard = responseData.data || [];
+    let allLeaderboardData = [];
 
-            listContainer.innerHTML = '';
-            if (leaderboard.length === 0) {
-                listContainer.innerHTML = `<p style="font-size:0.85rem; color:#94a3b8; text-align:center; padding:10px;">Belum ada rekod terpusat tersimpan.</p>`;
-                return;
-            }
+	async function fetchGlobalLeaderboard() {
+		try {
+			const res = await fetch('/api/leaderboard');
+			const responseData = await res.json();
+			allLeaderboardData = responseData.data || [];
+			filterLeaderboard('quiz'); // Papar tab Kuiz secara lalai
+		} catch (err) {
+			document.getElementById('main-leaderboard').innerHTML = `<p style="font-size:0.85rem; color:#ef4444; text-align:center;">Gagal memuat turun Carta Kedudukan.</p>`;
+		}
+	}
 
-            leaderboard.forEach((item, index) => {
-                const li = document.createElement('li');
-                li.className = 'leaderboard-item';
-                let medal = `#${index + 1}`;
-                if (index === 0) medal = '🥇';
-                if (index === 1) medal = '🥈';
-                if (index === 2) medal = '🥉';
+	function filterLeaderboard(type) {
+		const listContainer = document.getElementById('main-leaderboard');
+		const quizBtn = document.getElementById('tab-quiz-btn');
+		const wordleBtn = document.getElementById('tab-wordle-btn');
 
-                li.innerHTML = `
-                    <div>
-                        <span class="rank">${medal}</span>
-                        <strong>${escapeHtml(item.nama)}</strong> 
-                        <small style="color:#64748b;">(${item.kategori})</small>
-                    </div>
-                    <div>
-                        <strong>${item.skor}/20</strong> 
-                        <small style="color:#64748b;">(${item.masa}s)</small>
-                    </div>
-                `;
-                listContainer.appendChild(li);
-            });
-        } catch (err) {
-            listContainer.innerHTML = `<p style="font-size:0.85rem; color:#ef4444; text-align:center;">Gagal memuat turun Carta Kedudukan.</p>`;
-        }
-    }
+		listContainer.innerHTML = '';
+		
+		let filteredData = [];
+		if (type === 'wordle') {
+			quizBtn.style.background = '#6b7280';
+			wordleBtn.style.background = '#8b5cf6';
+			// Tapis hanya kategori Teka Perkataan & susun mengikut MASA TERPANTAS
+			filteredData = allLeaderboardData.filter(item => item.kategori === 'Teka Perkataan')
+											 .sort((a, b) => a.masa - b.masa);
+		} else {
+			quizBtn.style.background = '#0d9488';
+			wordleBtn.style.background = '#6b7280';
+			// Tapis selain Teka Perkataan
+			filteredData = allLeaderboardData.filter(item => item.kategori !== 'Teka Perkataan');
+		}
+
+		if (filteredData.length === 0) {
+			listContainer.innerHTML = `<p style="font-size:0.85rem; color:#94a3b8; text-align:center; padding:10px;">Belum ada rekod tersimpan.</p>`;
+			return;
+		}
+
+		filteredData.forEach((item, index) => {
+			const li = document.createElement('li');
+			li.className = 'leaderboard-item';
+			let medal = `#${index + 1}`;
+			if (index === 0) medal = '🥇';
+			if (index === 1) medal = '🥈';
+			if (index === 2) medal = '🥉';
+
+			const displayStat = (type === 'wordle')
+				? `⏱️ <strong>${item.masa}s</strong>`
+				: `<strong>${item.skor}/20</strong> <small style="color:#64748b;">(${item.masa}s)</small>`;
+
+			li.innerHTML = `
+				<div>
+					<span class="rank">${medal}</span>
+					<strong>${escapeHtml(item.nama)}</strong> 
+					<small style="color:#64748b;">(${item.kategori})</small>
+				</div>
+				<div>${displayStat}</div>
+			`;
+			listContainer.appendChild(li);
+		});
+	}
 
     async function prepareQuiz(category, subCategory = '', categoryName = '', isSurvival = false) {
         pendingCategory = category;
@@ -1018,52 +1052,71 @@
     }
 
     function showResult(isGameOver = false) {
+		clearInterval(timer);
+		clearInterval(wordleStopwatch);
+
 		if (totalTimeTaken <= 3) {
-            alert("Anda hanya bermain-main. Sila jawab dengan betul!");
-            showMainMenu();
-            return;
-        }
+			alert("Anda hanya bermain-main. Sila jawab dengan betul!");
+			showMainMenu();
+			return;
+		}
 
-		const badgeText = getBadgeTitle(score, currentQuestions.length);
-        clearInterval(timer);
-        document.getElementById('quiz-screen').classList.add('hidden');
-        document.getElementById('wordle-screen').classList.add('hidden');
-        document.getElementById('result-screen').classList.remove('hidden');
-        
-        const resultTitle = document.getElementById('result-title');
-        if (isGameOver) {
-            resultTitle.innerText = "💀 GAME OVER (Nyawa Habis!)";
-            resultTitle.style.color = "#ef4444";
-        } else {
-            resultTitle.innerText = "Keputusan Kuiz";
-            resultTitle.style.color = "#0d9488";
-        }
+		document.getElementById('quiz-screen').classList.add('hidden');
+		document.getElementById('wordle-screen').classList.add('hidden');
+		document.getElementById('result-screen').classList.remove('hidden');
+		
+		const resultTitle = document.getElementById('result-title');
+		const scoreBox = document.getElementById('score');
+		const titleBadge = document.getElementById('title-badge');
 
-        document.getElementById('score').innerText = `Skor Anda: ${score} / ${currentQuestions.length}`;
-		document.getElementById('title-badge').innerHTML = `Gelaran Anda:<br><span style="font-size: 1.5rem;">${badgeText}</span>`;		
-        document.getElementById('time-taken-text').innerText = `⏱️ Jumlah Masa: ${totalTimeTaken} Saat`;
-        document.getElementById('save-form').style.display = 'block';
+		if (currentCategoryName === "Teka Perkataan") {
+			// Bagi Wordle: Sembunyikan skor /20 dan gelaran
+			resultTitle.innerText = "🎉 Tahniah! Puzzle Selesai";
+			resultTitle.style.color = "#8b5cf6";
+			scoreBox.style.display = 'none';
+			titleBadge.style.display = 'none';
+		} else {
+			// Bagi Kuiz Biasa
+			scoreBox.style.display = 'block';
+			titleBadge.style.display = 'inline-block';
+			
+			if (isGameOver) {
+				resultTitle.innerText = "💀 GAME OVER (Nyawa Habis!)";
+				resultTitle.style.color = "#ef4444";
+			} else {
+				resultTitle.innerText = "Keputusan Kuiz";
+				resultTitle.style.color = "#0d9488";
+			}
 
-        const reviewContainer = document.getElementById('review-container');
-        const reviewList = document.getElementById('review-list');
-        reviewList.innerHTML = '';
+			const badgeText = getBadgeTitle(score, currentQuestions.length);
+			scoreBox.innerText = `Skor Anda: ${score} / ${currentQuestions.length}`;
+			titleBadge.innerHTML = `Gelaran Anda:<br><span style="font-size: 1.5rem;">${badgeText}</span>`;
+		}
 
-        if (wrongAnswersHistory.length > 0) {
-            reviewContainer.classList.remove('hidden');
-            wrongAnswersHistory.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'review-item';
-                div.innerHTML = `
-                    <div class="review-question">${index + 1}. ${item.soalan}</div>
-                    <div class="review-ans">Jawapan Anda: <span class="user-wrong">${escapeHtml(item.jawapanPengguna)}</span></div>
-                    <div class="review-ans">Jawapan Tepat: <span class="correct-right">✓ ${escapeHtml(item.jawapanBetul)}</span></div>
-                `;
-                reviewList.appendChild(div);
-            });
-        } else {
-            reviewContainer.classList.add('hidden');
-        }
-    }
+		document.getElementById('time-taken-text').innerText = `⏱️ Masa Diambil: ${totalTimeTaken} Saat`;
+		document.getElementById('save-form').style.display = 'block';
+
+		// Semakan Soalan Salah
+		const reviewContainer = document.getElementById('review-container');
+		const reviewList = document.getElementById('review-list');
+		reviewList.innerHTML = '';
+
+		if (wrongAnswersHistory.length > 0) {
+			reviewContainer.classList.remove('hidden');
+			wrongAnswersHistory.forEach((item, index) => {
+				const div = document.createElement('div');
+				div.className = 'review-item';
+				div.innerHTML = `
+					<div class="review-question">${index + 1}. ${item.soalan}</div>
+					<div class="review-ans">Jawapan Anda: <span class="user-wrong">${escapeHtml(item.jawapanPengguna)}</span></div>
+					<div class="review-ans">Jawapan Tepat: <span class="correct-right">✓ ${escapeHtml(item.jawapanBetul)}</span></div>
+				`;
+				reviewList.appendChild(div);
+			});
+		} else {
+			reviewContainer.classList.add('hidden');
+		}
+	}
 
 	function shareToWhatsApp() {
 		const name = document.getElementById('player-name').value.trim() || 'Pemain';
@@ -1084,56 +1137,69 @@
 	}
 
     /* --- LOGIK PERMAINAN TEKA PERKATAAN (WORDLE) --- */
+	let wordleStopwatch;
 
-    async function startWordleGame() {
-        try {
-            const res = await fetch('/api/wordle-soalan');
-            const data = await res.json();
-            wordleQuestions = shuffleArray(data.data);
+	async function startWordleGame() {
+		try {
+			const res = await fetch('/api/wordle-soalan');
+			const data = await res.json();
+			wordleQuestions = shuffleArray(data.data).slice(0, 5); // 5 soalan setiap sesi
 
-            if (wordleQuestions.length === 0) {
-                alert("Tiada perkataan ditemui.");
-                return;
-            }
+			if (wordleQuestions.length === 0) {
+				alert("Tiada perkataan ditemui.");
+				return;
+			}
 
-            currentWordleIndex = 0;
-            currentCategoryName = "Teka Perkataan";
-            document.getElementById('main-menu').classList.add('hidden');
-            document.getElementById('wordle-screen').classList.remove('hidden');
-            
-            loadWordlePuzzle();
-        } catch (e) {
-            alert("Ralat memuatkan soalan Teka Perkataan!");
-        }
-    }
+			currentWordleIndex = 0;
+			score = 0;
+			totalTimeTaken = 0; // Reset jumlah masa
+			wrongAnswersHistory = [];
+			currentCategoryName = "Teka Perkataan";
 
-    function loadWordlePuzzle() {
-        const item = wordleQuestions[currentWordleIndex];
-        targetWord = item.jawapan;
-        wordLen = targetWord.length;
-        currentAttempt = 0;
-        currentTile = 0;
+			// Mula Pengira Masa Menaik (Stopwatch)
+			clearInterval(wordleStopwatch);
+			wordleStopwatch = setInterval(() => {
+				totalTimeTaken++;
+				const timerDisplay = document.getElementById('wordle-timer-box');
+				if (timerDisplay) timerDisplay.innerText = totalTimeTaken;
+			}, 1000);
 
-        document.getElementById('wordle-hint').innerText = `💡 Pembayang: ${item.soalan} (${wordLen} Huruf)`;
-        
-        // Cipta grid petak mengikut panjang perkataan (wordLen)
-        const board = document.getElementById('wordle-board');
-        board.innerHTML = '';
-        guessRows = Array(maxAttempts).fill().map(() => Array(wordLen).fill(''));
+			document.getElementById('main-menu').classList.add('hidden');
+			document.getElementById('wordle-screen').classList.remove('hidden');
+			
+			loadWordlePuzzle();
+		} catch (e) {
+			alert("Ralat memuatkan soalan Teka Perkataan!");
+		}
+	}
 
-        for (let r = 0; r < maxAttempts; r++) {
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'wordle-row';
-            rowDiv.id = `row-${r}`;
-            for (let c = 0; c < wordLen; c++) {
-                const tileDiv = document.createElement('div');
-                tileDiv.className = 'wordle-tile';
-                tileDiv.id = `row-${r}-tile-${c}`;
-                rowDiv.appendChild(tileDiv);
-            }
-            board.appendChild(rowDiv);
-        }
-    }
+	function loadWordlePuzzle() {
+		const item = wordleQuestions[currentWordleIndex];
+		targetWord = item.jawapan;
+		wordLen = targetWord.length;
+		currentAttempt = 0;
+		currentTile = 0;
+
+		document.getElementById('wordle-hint').innerText = `💡 Soalan ${currentWordleIndex + 1}/${wordleQuestions.length}: ${item.soalan} (${wordLen} Huruf)`;
+
+		// Cipta grid petak mengikut panjang perkataan (wordLen)
+		const board = document.getElementById('wordle-board');
+		board.innerHTML = '';
+		guessRows = Array(maxAttempts).fill().map(() => Array(wordLen).fill(''));
+
+		for (let r = 0; r < maxAttempts; r++) {
+			const rowDiv = document.createElement('div');
+			rowDiv.className = 'wordle-row';
+			rowDiv.id = `row-${r}`;
+			for (let c = 0; c < wordLen; c++) {
+				const tileDiv = document.createElement('div');
+				tileDiv.className = 'wordle-tile';
+				tileDiv.id = `row-${r}-tile-${c}`;
+				rowDiv.appendChild(tileDiv);
+			}
+			board.appendChild(rowDiv);
+		}
+	}
 
     function setupVirtualKeyboard() {
         const row1 = ["Q","W","E","R","T","Y","U","I","O","P"];
@@ -1188,51 +1254,63 @@
     }
 
     function checkWordleGuess() {
-        const currentGuess = guessRows[currentAttempt].join('');
-        const targetArr = targetWord.split('');
+		const currentGuess = guessRows[currentAttempt].join('');
+		const targetArr = targetWord.split('');
 
-        for (let i = 0; i < wordLen; i++) {
-            const tile = document.getElementById(`row-${currentAttempt}-tile-${i}`);
-            const letter = currentGuess[i];
+		for (let i = 0; i < wordLen; i++) {
+			const tile = document.getElementById(`row-${currentAttempt}-tile-${i}`);
+			const letter = currentGuess[i];
 
-            if (letter === targetArr[i]) {
-                tile.classList.add('correct');
-                targetArr[i] = null;
-            } else if (targetArr.includes(letter)) {
-                tile.classList.add('present');
-                targetArr[targetArr.indexOf(letter)] = null;
-            } else {
-                tile.classList.add('absent');
-            }
-        }
+			if (letter === targetArr[i]) {
+				tile.classList.add('correct');
+				targetArr[i] = null;
+			} else if (targetArr.includes(letter)) {
+				tile.classList.add('present');
+				targetArr[targetArr.indexOf(letter)] = null;
+			} else {
+				tile.classList.add('absent');
+			}
+		}
 
-        if (currentGuess === targetWord) {
-            setTimeout(() => {
-                alert("Tahniah! Tekaan anda betul! 🎉");
-                currentWordleIndex++;
-                if (currentWordleIndex < wordleQuestions.length) {
-                    loadWordlePuzzle();
-                } else {
-                    alert("Tahniah! Anda telah tamatkan semua perkataan!");
-                    showMainMenu();
-                }
-            }, 300);
-        } else {
-            currentAttempt++;
-            currentTile = 0;
-            if (currentAttempt >= maxAttempts) {
-                setTimeout(() => {
-                    alert(`Gagal! Jawapan sebenar ialah: ${targetWord}`);
-                    currentWordleIndex++;
-                    if (currentWordleIndex < wordleQuestions.length) {
-                        loadWordlePuzzle();
-                    } else {
-                        showMainMenu();
-                    }
-                }, 300);
-            }
-        }
-    }
+		if (currentGuess === targetWord) {
+			score++;
+			setTimeout(() => {
+				alert("Tahniah! Tekaan anda betul! 🎉");
+				nextWordlePuzzle();
+			}, 300);
+		} else {
+			currentAttempt++;
+			currentTile = 0;
+			if (currentAttempt >= maxAttempts) {
+				recordWordleWrongAnswer(currentGuess);
+				setTimeout(() => {
+					alert(`Gagal! Jawapan sebenar ialah: ${targetWord}`);
+					nextWordlePuzzle();
+				}, 300);
+			}
+		}
+	}
+	
+	function recordWordleWrongAnswer(lastGuess) {
+		const item = wordleQuestions[currentWordleIndex];
+		wrongAnswersHistory.push({
+			soalan: item.soalan,
+			jawapanPengguna: lastGuess || "Salah Teka",
+			jawapanBetul: targetWord
+		});
+	}
+
+	function nextWordlePuzzle() {
+		currentWordleIndex++;
+		if (currentWordleIndex < wordleQuestions.length) {
+			loadWordlePuzzle();
+		} else {
+			// Hentikan stopwatch apabila 5 puzzle selesai
+			clearInterval(wordleStopwatch);
+			// Tunjukkan skrin keputusan dan simpan ke leaderboard
+			showResult(false);
+		}
+	}
 </script>
 
 </body>

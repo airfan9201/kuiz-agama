@@ -74,7 +74,7 @@ QUIZ_DATA = {
             {"id": 50, "soalan": "Syurga tempat ganjaran bagi orang beriman dinamakan...", "pilihan": ["Jahannam", "Barzakh", "Mahsyar", "Jannah"], "jawapan": 3},
             {"id": 51, "soalan": "Sifat wajib bagi Rasul 'Tabligh' bermaksud...", "pilihan": ["Amanah", "Bercakap benar", "Bijaksana", "Menyampaikan wahyu"], "jawapan": 3},
             {"id": 52, "soalan": "Malaikat yang bertugas mencatat amal keburukan ialah...", "pilihan": ["Raqib", "Nakir", "Munkar", "Atid"], "jawapan": 3},
-            {"id": 53, "soalan": "Mustahil bagi Allah bersifat 'Jahlun' yang bermaksud...", "pilihan": ["Bodo / Jahil", "Tuli", "Mati", "Lemah"], "jawapan": 0},
+            {"id": 53, "soalan": "Mustahil bagi Allah bersifat 'Jahlun' yang bermaksud...", "pilihan": ["Bodoh / Jahil", "Tuli", "Mati", "Lemah"], "jawapan": 0},
             {"id": 54, "soalan": "Alam kehidupan di dalam kubur sementara menunggu hari kiamat dipanggil...", "pilihan": ["Alam Barzakh", "Alam Rahim", "Alam Malakut", "Padang Mahsyar"], "jawapan": 0},
             {"id": 55, "soalan": "Suhuf merupakan lembaran wahyu yang tidak dibukukan. Nabi yang menerima suhuf ialah...", "pilihan": ["Nabi Nuh A.S.", "Nabi Ibrahim A.S.", "Nabi Isa A.S.", "Nabi Muhammad SAW"], "jawapan": 1},
             {"id": 56, "soalan": "Qada' yang boleh berubah melalui doa dan usaha manusia dinamakan...", "pilihan": ["Qada' Muallaq", "Qada' Qadim", "Qada' Mubram", "Qada' Mutlaq"], "jawapan": 0},
