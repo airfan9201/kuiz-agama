@@ -430,7 +430,14 @@
             font-weight: bold;
             text-transform: uppercase;
             background: #ffffff;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+        }
+
+        /* Penyerlah Kursor Petak Semasa */
+        .wordle-tile.active {
+            border: 2px solid #8b5cf6 !important;
+            box-shadow: 0 0 6px rgba(139, 92, 246, 0.4);
+            transform: scale(1.05);
         }
 
         .wordle-tile.correct { background: var(--correct-color); color: white; border-color: var(--correct-color); }
@@ -726,13 +733,11 @@
 		if (type === 'wordle') {
 			quizBtn.style.background = '#6b7280';
 			wordleBtn.style.background = '#8b5cf6';
-			// Tapis hanya kategori Teka Perkataan & susun mengikut MASA TERPANTAS
 			filteredData = allLeaderboardData.filter(item => item.kategori === 'Teka Perkataan')
 											 .sort((a, b) => a.masa - b.masa);
 		} else {
 			quizBtn.style.background = '#0d9488';
 			wordleBtn.style.background = '#6b7280';
-			// Tapis selain Teka Perkataan
 			filteredData = allLeaderboardData.filter(item => item.kategori !== 'Teka Perkataan');
 		}
 
@@ -859,6 +864,7 @@
 
     function showMainMenu() {
         clearInterval(timer);
+        clearInterval(wordleStopwatch);
         fetchGlobalLeaderboard(); 
         document.getElementById('main-menu').classList.remove('hidden');
         document.getElementById('sub-menu-rukun').classList.add('hidden');
@@ -1070,13 +1076,11 @@
 		const titleBadge = document.getElementById('title-badge');
 
 		if (currentCategoryName === "Teka Perkataan") {
-			// Bagi Wordle: Sembunyikan skor /20 dan gelaran
 			resultTitle.innerText = "🎉 Tahniah! Puzzle Selesai";
 			resultTitle.style.color = "#8b5cf6";
 			scoreBox.style.display = 'none';
 			titleBadge.style.display = 'none';
 		} else {
-			// Bagi Kuiz Biasa
 			scoreBox.style.display = 'block';
 			titleBadge.style.display = 'inline-block';
 			
@@ -1096,7 +1100,6 @@
 		document.getElementById('time-taken-text').innerText = `⏱️ Masa Diambil: ${totalTimeTaken} Saat`;
 		document.getElementById('save-form').style.display = 'block';
 
-		// Semakan Soalan Salah
 		const reviewContainer = document.getElementById('review-container');
 		const reviewList = document.getElementById('review-list');
 		reviewList.innerHTML = '';
@@ -1139,14 +1142,12 @@
     /* --- LOGIK PERMAINAN TEKA PERKATAAN (WORDLE) --- */
 
 	let wordleStopwatch;
-	let revealedLettersCount = 0; // Mengira berapa kali petunjuk digunakan (max 3)
 
 	async function startWordleGame() {
 		try {
 			const res = await fetch('/api/wordle-soalan');
 			const data = await res.json();
 			
-			// Ambil 1 perkataan sahaja
 			wordleQuestions = shuffleArray(data.data).slice(0, 1); 
 
 			if (wordleQuestions.length === 0) {
@@ -1157,11 +1158,9 @@
 			currentWordleIndex = 0;
 			score = 0;
 			totalTimeTaken = 0;
-			revealedLettersCount = 0; // Reset bilangan pembuka aksara
 			wrongAnswersHistory = [];
 			currentCategoryName = "Teka Perkataan";
 
-			// Mula Stopwatch
 			clearInterval(wordleStopwatch);
 			wordleStopwatch = setInterval(() => {
 				totalTimeTaken++;
@@ -1185,16 +1184,8 @@
 		currentAttempt = 0;
 		currentTile = 0;
 
-		// Paparan tajuk & butang bantuan
-		const hintContainer = document.getElementById('wordle-hint');
-		hintContainer.innerHTML = `
-			<div style="margin-bottom: 8px;">🧩 Teka Perkataan (${wordLen} Huruf)</div>
-			<button id="reveal-btn" style="padding: 6px 12px; font-size: 0.85rem; background: #8b5cf6;" onclick="revealOneLetter()">
-				💡 Buka 1 Aksara (+10s Masa) [<span id="reveal-count">3</span>/3]
-			</button>
-		`;
+		document.getElementById('wordle-hint').innerText = `🧩 Teka Perkataan (${wordLen} Huruf)`;
 
-		// Cipta grid petak mengikut panjang perkataan (wordLen)
 		const board = document.getElementById('wordle-board');
 		board.innerHTML = '';
 		guessRows = Array(maxAttempts).fill().map(() => Array(wordLen).fill(''));
@@ -1211,76 +1202,29 @@
 			}
 			board.appendChild(rowDiv);
 		}
+
+		updateTileHighlight();
 	}
 
-	// FUNGSI KHAS: Buka 1 Aksara (Mengelakkan kotak yang sudah hijau + reset cursor)
-	function revealOneLetter() {
-		if (revealedLettersCount >= 3) {
-			alert("Anda telah mencapai had maksima 3 aksara bantuan!");
-			return;
+	// KEMASKINI PENYERLAH KURSOR (ACTIVE TILE)
+	function updateTileHighlight() {
+		// Bersihkan penyerlah aktif lama pada baris semasa
+		for (let c = 0; c < wordLen; c++) {
+			const tile = document.getElementById(`row-${currentAttempt}-tile-${c}`);
+			if (tile) tile.classList.remove('active');
 		}
 
-		// Cari indeks kedudukan aksara yang BELUM BETUL (belum hijau)
-		let unrevealedIndices = [];
-		
-		for (let i = 0; i < wordLen; i++) {
-			let isAlreadyCorrect = false;
-
-			// Semak jika mana-mana baris terdahulu sudah hijau untuk petak ini
-			for (let r = 0; r <= currentAttempt; r++) {
-				const tile = document.getElementById(`row-${r}-tile-${i}`);
-				if (tile && tile.classList.contains('correct')) {
-					isAlreadyCorrect = true;
-					break;
-				}
-			}
-
-			if (!isAlreadyCorrect && guessRows[currentAttempt][i] !== targetWord[i]) {
-				unrevealedIndices.push(i);
-			}
-		}
-
-		if (unrevealedIndices.length === 0) {
-			alert("Semua aksara yang tinggal telah diteka dengan betul!");
-			return;
-		}
-
-		// Pilih 1 aksara rawak daripada senarai kotak yang belum hijau
-		const randomIndex = unrevealedIndices[Math.floor(Math.random() * unrevealedIndices.length)];
-		const revealedLetter = targetWord[randomIndex];
-
-		// Isikan aksara ke dalam petak percubaan semasa
-		guessRows[currentAttempt][randomIndex] = revealedLetter;
-
-		const tile = document.getElementById(`row-${currentAttempt}-tile-${randomIndex}`);
-		if (tile) {
-			tile.innerText = revealedLetter;
-			tile.style.borderColor = "#8b5cf6"; // Warna penanda bantuan (Ungu)
-			tile.style.color = "#8b5cf6";
-		}
-
-		// RESET INDEX CURSOR: Set semula cursor ke petak pertama yang masih KOSONG di baris ini
-		let firstEmptySlot = 0;
-		while (firstEmptySlot < wordLen && guessRows[currentAttempt][firstEmptySlot] !== '') {
-			firstEmptySlot++;
-		}
-		currentTile = firstEmptySlot;
-
-		// Penalti +10 saat
-		totalTimeTaken += 10;
-		revealedLettersCount++;
-
-		// Kemaskini paparan pemasa & baki butang bantuan
-		document.getElementById('wordle-timer-box').innerText = totalTimeTaken;
-		document.getElementById('reveal-count').innerText = 3 - revealedLettersCount;
-
-		if (revealedLettersCount >= 3) {
-			const btn = document.getElementById('reveal-btn');
-			if (btn) btn.disabled = true;
+		// Sorotkan petak di mana cursor berada
+		if (currentTile < wordLen) {
+			const activeTile = document.getElementById(`row-${currentAttempt}-tile-${currentTile}`);
+			if (activeTile) activeTile.classList.add('active');
 		}
 	}
 
 	function checkWordleGuess() {
+		// Buang kelas penyerlah apabila tekaan disemak
+		updateTileHighlight();
+
 		const currentGuess = guessRows[currentAttempt].join('');
 		const targetArr = targetWord.split('');
 
@@ -1300,7 +1244,6 @@
 		}
 
 		if (currentGuess === targetWord) {
-			// TAHNAIAH: Jika Berjaya
 			clearInterval(wordleStopwatch);
 			score = 1;
 			setTimeout(() => {
@@ -1311,28 +1254,15 @@
 			currentAttempt++;
 			currentTile = 0;
 			if (currentAttempt >= maxAttempts) {
-				// GAGAL: Kembalikan ke Laman Utama Tanpa Bagi Jawapan
 				clearInterval(wordleStopwatch);
 				setTimeout(() => {
 					alert("Anda gagal menyelesaikan masalah.");
 					showMainMenu();
 				}, 300);
+			} else {
+				updateTileHighlight();
 			}
 		}
-	}
-
-	function recordWordleWrongAnswer(lastGuess) {
-		wrongAnswersHistory.push({
-			soalan: `Perkataan ${targetWord.length} Huruf`,
-			jawapanPengguna: lastGuess || "Salah Teka",
-			jawapanBetul: targetWord
-		});
-	}
-
-	function nextWordlePuzzle() {
-		// Terus hentikan masa & bawa ke skrin keputusan selepas 1 soalan selesai
-		clearInterval(wordleStopwatch);
-		showResult(false);
 	}
 
     function setupVirtualKeyboard() {
@@ -1373,6 +1303,7 @@
                 currentTile--;
                 guessRows[currentAttempt][currentTile] = '';
                 document.getElementById(`row-${currentAttempt}-tile-${currentTile}`).innerText = '';
+                updateTileHighlight();
             }
         } else if (key === 'ENTER') {
             if (currentTile === wordLen) {
@@ -1384,10 +1315,9 @@
             guessRows[currentAttempt][currentTile] = key;
             document.getElementById(`row-${currentAttempt}-tile-${currentTile}`).innerText = key;
             currentTile++;
+            updateTileHighlight();
         }
     }
-
-	
 </script>
 
 </body>
