@@ -532,6 +532,7 @@ QUIZ_DATA = {
 def get_wordle_soalan():
     all_questions = []
     
+    # Kumpulkan semua soalan dari seluruh kategori
     for sub_cat, q_list in QUIZ_DATA.get('rukun', {}).items():
         all_questions.extend(q_list)
     all_questions.extend(QUIZ_DATA.get('sejarah', []))
@@ -540,11 +541,17 @@ def get_wordle_soalan():
     valid_wordle = []
     for q in all_questions:
         jawapan_text = q['pilihan'][q['jawapan']]
-        clean_word = re.sub(r'\([^)]*\)', '', jawapan_text).strip().upper()
-        clean_word = re.sub(r'[^A-Z]', '', clean_word)
         
-        # HANYA AMBIL PERKATAAN 3 HINGGA 6 HURUF SAHAJA
-        if 3 <= len(clean_word) <= 6:
+        # 1. Buang kandungan dalam kurungan contoh: "(Quru')" atau "(Perlu Niat)"
+        clean_word = re.sub(r'\([^)]*\)', '', jawapan_text).strip().upper()
+        
+        # 2. Semak jika perkataan mengandungi aksara bukan A-Z (cth: nombor, petik tunggal, tanda sempang)
+        # Jika ada simbol/aksara khas/nombor, lalukan (abaikan perkataan ini)
+        if re.search(r'[^A-Z]', clean_word):
+            continue
+        
+        # 3. HANYA AMBIL PERKATAAN YANG TEPAT 5 AKSARA SAHAJA
+        if len(clean_word) == 5:
             valid_wordle.append({
                 "soalan": q['soalan'],
                 "jawapan": clean_word
