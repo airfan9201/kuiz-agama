@@ -598,9 +598,9 @@ def get_soalan():
 @app.route('/api/leaderboard', methods=['GET', 'POST'])
 def handle_leaderboard():
     global LOCAL_LEADERBOARD
-    LEADERBOARD_KEY = "global_leaderboard"
+    QUIZ_LEADERBOARD_KEY = "global_leaderboard"
+    WORDLE_LEADERBOARD_KEY = "wordle_leaderboard"
     
-    # Buka sambungan ke Redis
     r_db = get_redis_client()
 
     if request.method == 'POST':
@@ -617,33 +617,43 @@ def handle_leaderboard():
             "kategori": kategori
         }
 
-        # 1. Simpan ke Redis Cloud jika sambungan wujud
+        # 1. Simpan ke Redis Cloud
         if r_db:
             try:
-                composite_score = (skor * 1000) + (1000 - masa)
-                # ZADD hantar data ke Sorted Set Redis
-                r_db.zadd(LEADERBOARD_KEY, {json.dumps(entry): composite_score})
+                if kategori == "Teka Perkataan":
+                    # Bagi Wordle: Simpan dalam set Wordle khas. Masa lebih KECIL = ranking lebih TINGGI
+                    r_db.zadd(WORDLE_LEADERBOARD_KEY, {json.dumps(entry): masa})
+                else:
+                    # Bagi Kuiz Biasa: Menggunakan composite score
+                    composite_score = (skor * 1000) + (1000 - masa)
+                    r_db.zadd(QUIZ_LEADERBOARD_KEY, {json.dumps(entry): composite_score})
+                    
                 return jsonify({"status": "success", "message": "Skor berjaya disimpan ke Redis Cloud!"})
             except Exception as e:
                 print("Redis Save Error:", e)
 
-        # 2. Fallback tempatan jika Redis bermasalah
+        # 2. Fallback tempatan jika tiada Redis
         LOCAL_LEADERBOARD.append(entry)
-        LOCAL_LEADERBOARD = sorted(LOCAL_LEADERBOARD, key=lambda x: (-x['skor'], x['masa']))[:10]
-
         return jsonify({"status": "success", "message": "Skor disimpan secara tempatan sementara!"})
 
     else:
-        # GET: Ambil 10 teratas dari Redis Cloud
+        # GET: Ambil kedua-dua data dari Redis Cloud dan gabungkan
         if r_db:
             try:
-                raw_list = r_db.zrevrange(LEADERBOARD_KEY, 0, 9)
+                # Ambil 10 teratas Kuiz (Skor Tertinggi)
+                raw_quiz = r_db.zrevrange(QUIZ_LEADERBOARD_KEY, 0, 9)
+                # Ambil 10 teratas Wordle (Masa Terpantas / Terkecil)
+                raw_wordle = r_db.zrange(WORDLE_LEADERBOARD_KEY, 0, 9)
+
                 db_data = []
-                for item in raw_list:
-                    try:
-                        db_data.append(json.loads(item))
-                    except:
-                        pass
+                for item in raw_quiz:
+                    try: db_data.append(json.loads(item))
+                    except: pass
+
+                for item in raw_wordle:
+                    try: db_data.append(json.loads(item))
+                    except: pass
+
                 if db_data:
                     return jsonify({"data": db_data})
             except Exception as e:
