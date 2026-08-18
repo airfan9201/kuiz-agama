@@ -477,7 +477,7 @@
 
    <!-- Menu Utama -->
 	<div id="main-menu">
-		<h1>✨ Kuiz Agama Islam [Irf v1.06]✨</h1>
+		<h1>✨ Kuiz Agama Islam [Irf v1.07]✨</h1>
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
@@ -1370,6 +1370,8 @@
 	let flappyTimeLeft = 180; // 3 minit = 180 saat
 	let isFlappyRunning = false;
 	let isVictory = false;
+	let pipeYOffset = 0;
+	let pipeYDirection = 1;
 	
 	// Senarai godaan & rintangan dunia
 	const flappyObstacles = [
@@ -1477,36 +1479,50 @@
 		bird.velocity += gravity;
 		bird.y += bird.velocity;
 
-		// Jana Paip Setiap 100 frame
+		// Laraskan offset pergerakan paip ke atas & ke bawah (bila baki masa <= 60 saat / 1 minit terakhir)
+		if (flappyTimeLeft <= 60) {
+			pipeYOffset += 0.8 * pipeYDirection;
+			if (pipeYOffset > 35 || pipeYOffset < -35) {
+				pipeYDirection *= -1; // Tukar arah pergerakan
+			}
+		} else {
+			pipeYOffset = 0;
+		}
+
+		// Jana Paip (Hanya jika baki masa LEBIH daripada 15 saat)
 		pipeFrameCounter++;
-		if (pipeFrameCounter % 100 === 0 && flappyTimeLeft > 5) {
-			let gap = 140; // Celah paip dipanjangkan sedikit (140px) supaya cukup muat teks
+		if (pipeFrameCounter % 100 === 0 && flappyTimeLeft > 15) {
+			let gap = 140; 
 			let topHeight = Math.floor(Math.random() * (canvas.height - gap - 120)) + 50;
-			
-			// Pilih teks rintangan secara rawak
 			let randomLabel = flappyObstacles[Math.floor(Math.random() * flappyObstacles.length)];
 
 			pipes.push({ 
 				x: canvas.width, 
 				top: topHeight, 
 				bottom: canvas.height - topHeight - gap,
-				label: randomLabel // Simpan label pada tiang ini
+				label: randomLabel,
+				// Paip bergerak hanya pada 1 minit terakhir
+				isMoving: flappyTimeLeft <= 60 
 			});
 		}
 
-		// Pergerakan Paip
+		// Pergerakan Paip Kedepan
 		pipes.forEach(p => p.x -= 2);
 		pipes = pipes.filter(p => p.x > -80);
 
-		// Semakan Pelanggaran (Collision)
+		// Semakan Pelanggaran (Collision) Dengan Tanah/Siling
 		if (bird.y + bird.radius >= canvas.height - 20 || bird.y - bird.radius <= 0) {
 			triggerFlappyGameOver();
 			return;
 		}
 
+		// Semakan Pelanggaran Dengan Paip
 		for (let p of pipes) {
+			let currentTop = p.isMoving ? p.top + pipeYOffset : p.top;
+			let currentBottom = p.isMoving ? p.bottom - pipeYOffset : p.bottom;
+
 			if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + 60) {
-				if (bird.y - bird.radius < p.top || bird.y + bird.radius > canvas.height - p.bottom) {
+				if (bird.y - bird.radius < currentTop || bird.y + bird.radius > canvas.height - currentBottom) {
 					triggerFlappyGameOver();
 					return;
 				}
@@ -1518,7 +1534,7 @@
 		ctx.fillStyle = "#70c5ce";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-		// Lukis Awan
+		// Lukis Awan Latar Belakang
 		ctx.fillStyle = "#ffffff";
 		ctx.beginPath();
 		ctx.arc(80, 80, 20, 0, Math.PI * 2);
@@ -1528,41 +1544,78 @@
 
 		// Lukis Paip Hijau & Teks Godaan
 		pipes.forEach(p => {
-			const pipeWidth = 60; // Lebar paip dibesarkan sedikit (60px) untuk muat teks
+			const pipeWidth = 60;
+			let drawTop = p.isMoving ? p.top + pipeYOffset : p.top;
+			let drawBottom = p.isMoving ? p.bottom - pipeYOffset : p.bottom;
 
 			// Paip Atas
 			ctx.fillStyle = "#22c55e";
 			ctx.strokeStyle = "#15803d";
 			ctx.lineWidth = 3;
-			ctx.fillRect(p.x, 0, pipeWidth, p.top);
-			ctx.strokeRect(p.x, 0, pipeWidth, p.top);
+			ctx.fillRect(p.x, 0, pipeWidth, drawTop);
+			ctx.strokeRect(p.x, 0, pipeWidth, drawTop);
 
 			// Paip Bawah
-			ctx.fillRect(p.x, canvas.height - p.bottom, pipeWidth, p.bottom);
-			ctx.strokeRect(p.x, canvas.height - p.bottom, pipeWidth, p.bottom);
+			ctx.fillRect(p.x, canvas.height - drawBottom, pipeWidth, drawBottom);
+			ctx.strokeRect(p.x, canvas.height - drawBottom, pipeWidth, drawBottom);
 
-			// Lukis Teks Godaan/Rintangan (Teks Hitam & Saiz Lebih Besar)
+			// Lukis Teks Godaan (Hitam & Jelas)
 			ctx.save();
-			ctx.fillStyle = "#000000"; // Tukar warna teks ke Hitam Pekat
-			ctx.font = "bold 18px 'Segoe UI', sans-serif"; // Saiz fon dibesarkan dari 11px ke 15px
+			ctx.fillStyle = "#000000";
+			ctx.font = "bold 13px 'Segoe UI', sans-serif";
 			ctx.textAlign = "center";
-			
-			// Bayang putih halus di sekeliling teks supaya tetap jelas jika paip berniat gelap
 			ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
 			ctx.shadowBlur = 3;
 
-			// Posisikan teks di tengah-tengah Paip Bawah
 			let textX = p.x + (pipeWidth / 2);
-			let textY = canvas.height - (p.bottom / 2);
+			let textY = canvas.height - (drawBottom / 2);
 
-			// Jika paip bawah terlalu pendek, lukis di paip atas
-			if (p.bottom < 80) {
-				textY = p.top / 2;
+			if (drawBottom < 80) {
+				textY = drawTop / 2;
 			}
 
 			ctx.fillText(p.label, textX, textY);
 			ctx.restore();
 		});
+
+		// --- NO 3: VISUAL PINTU SYURGA (15 Saat Terakhir) ---
+		if (flappyTimeLeft <= 15) {
+			// Pengiraan kedudukan Pintu Syurga menghampiri dari kanan
+			let gateX = (flappyTimeLeft / 15) * (canvas.width + 100) - 80;
+
+			ctx.save();
+			// Cahaya Emas Belakang Pintu
+			let gradient = ctx.createRadialGradient(gateX + 40, canvas.height / 2, 10, gateX + 40, canvas.height / 2, 120);
+			gradient.addColorStop(0, 'rgba(254, 240, 138, 0.9)');
+			gradient.addColorStop(1, 'rgba(254, 240, 138, 0)');
+			ctx.fillStyle = gradient;
+			ctx.fillRect(gateX - 100, 0, 300, canvas.height);
+
+			// Lukis Tiang Pintu Syurga (Putih & Emas)
+			ctx.fillStyle = "#ffffff";
+			ctx.strokeStyle = "#f59e0b";
+			ctx.lineWidth = 4;
+
+			// Tiang Kiri & Kanan Pintu
+			ctx.fillRect(gateX, 60, 20, canvas.height - 80);
+			ctx.strokeRect(gateX, 60, 20, canvas.height - 80);
+			ctx.fillRect(gateX + 70, 60, 20, canvas.height - 80);
+			ctx.strokeRect(gateX + 70, 60, 20, canvas.height - 80);
+
+			// Gerbang Atas (Bentuk Kubah)
+			ctx.beginPath();
+			ctx.arc(gateX + 45, 65, 45, Math.PI, 0);
+			ctx.fillStyle = "#fef08a";
+			ctx.fill();
+			ctx.stroke();
+
+			// Teks "SYURGA"
+			ctx.fillStyle = "#78350f";
+			ctx.font = "bold 14px 'Segoe UI', sans-serif";
+			ctx.textAlign = "center";
+			ctx.fillText("✨ SYURGA ✨", gateX + 45, 55);
+			ctx.restore();
+		}
 
 		// Lukis Tanah (Ground)
 		ctx.fillStyle = "#ded895";
