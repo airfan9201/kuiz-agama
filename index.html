@@ -477,7 +477,7 @@
 
    <!-- Menu Utama -->
 	<div id="main-menu">
-		<h1>✨ Kuiz Agama Islam v1.0✨</h1>
+		<h1>✨ Kuiz Agama Islam v1.00✨</h1>
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
@@ -1579,6 +1579,11 @@
 		if (gameLoopId) {
 			cancelAnimationFrame(gameLoopId);
 		}
+		// Sembunyikan terus skrin & modal flappy setiap kali game dihentikan
+		const flappyScr = document.getElementById('flappy-screen');
+		const flappyMdl = document.getElementById('flappy-modal');
+		if (flappyScr) flappyScr.classList.add('hidden');
+		if (flappyMdl) flappyMdl.classList.add('hidden');
 	}
 </script>
 
