@@ -511,6 +511,13 @@
 				<div class="card-title">Teka Perkataan</div>
 				<div class="card-desc">Tanpa Pembayang.5 Huruf Sahaja.</div>
 			</div>
+			
+			<div class="category-card" style="border-color: #f59e0b; background: #fffbeb;" onclick="startFlappyGame()">
+				<div class="card-icon">🕊️</div>
+				<div class="card-title">Kembara Santai</div>
+				<div class="card-desc">Mod Flappy Bird (3 Minit) • Tanpa Masa • Kembara menuju Syurga</div>
+			</div>
+			
 		</div>
 
 		<div class="leaderboard-box">
@@ -600,6 +607,37 @@
 		</div>
 
 		<button class="back-btn" style="width:100%;" onclick="clearInterval(wordleStopwatch); showMainMenu();">⬅️ Menu Utama</button>
+	</div>
+	
+	<div id="flappy-screen" class="hidden">
+		<div class="quiz-header">
+			<h2>🕊️ Kembara Santai</h2>
+			<div class="timer-box" style="background-color: #fef3c7; color: #d97706; border-color: #fde68a;">
+				⏳ Baki Masa: <span id="flappy-timer">03:00</span>
+			</div>
+		</div>
+		
+		<p style="font-size: 0.9rem; color: #64748b; margin-bottom: 10px;">
+			Tekan <strong>SPACEBAR</strong> atau <strong>TAP Skrin</strong> untuk terbang!
+		</p>
+
+		<canvas id="flappyCanvas" width="360" height="480" style="border: 3px solid #0d9488; border-radius: 12px; background: #70c5ce; touch-action: manipulation;"></canvas>
+
+		<button class="back-btn" style="width:100%; margin-top: 10px;" onclick="stopFlappyGame(); showMainMenu();">⬅️ Menu Utama</button>
+	</div>
+
+	<div id="flappy-modal" class="modal-overlay hidden">
+		<div class="modal-card">
+			<div class="modal-header">
+				<span id="flappy-modal-icon" style="font-size:3rem;">💥</span>
+				<h3 id="flappy-modal-title">Terlanggar Paip!</h3>
+			</div>
+			<div class="modal-body">
+				<p id="flappy-modal-msg" style="color:#64748b; margin-bottom:15px;">Adakah anda ingin cuba lagi?</p>
+			</div>
+			<button class="btn-primary-start" onclick="restartFlappyGame()">🔄 Ya, Cuba Lagi!</button>
+			<button class="back-btn" style="width:100%; margin-top:8px;" onclick="closeFlappyModalAndExit()">❌ Tidak, Ke Menu Utama</button>
+		</div>
 	</div>
 
     <!-- Skrin Keputusan -->
@@ -1318,6 +1356,221 @@
             updateTileHighlight();
         }
     }
+	
+	/* =========================================================
+	LOGIK MOD BONUS: FLAPPY BIRD (KEMBARA SANTAI)
+	========================================================= */
+	let canvas, ctx;
+	let bird, pipes, gravity, jump, gameLoopId, gameTimerId;
+	let flappyTimeLeft = 180; // 3 minit = 180 saat
+	let isFlappyRunning = false;
+	let isVictory = false;
+
+	function startFlappyGame() {
+		document.getElementById('main-menu').classList.add('hidden');
+		document.getElementById('flappy-screen').classList.remove('hidden');
+		
+		canvas = document.getElementById('flappyCanvas');
+		ctx = canvas.getContext('2d');
+
+		// Event Listener untuk Tap / Klik / Spacebar
+		window.removeEventListener('keydown', handleFlappyInput);
+		canvas.removeEventListener('touchstart', handleFlappyTouch);
+		
+		window.addEventListener('keydown', handleFlappyInput);
+		canvas.addEventListener('touchstart', handleFlappyTouch, {passive: false});
+
+		initFlappyState();
+	}
+
+	function initFlappyState() {
+		bird = { x: 50, y: 200, radius: 12, velocity: 0 };
+		pipes = [];
+		gravity = 0.35;
+		jump = -6.5;
+		flappyTimeLeft = 180; // Reset ke 3 minit
+		isFlappyRunning = true;
+		isVictory = false;
+
+		updateFlappyTimerDisplay();
+
+		// Henti pemasa lama jika ada
+		clearInterval(gameTimerId);
+		cancelAnimationFrame(gameLoopId);
+
+		// Pemasa Masa 3 Minit
+		gameTimerId = setInterval(() => {
+			if (!isFlappyRunning) return;
+			flappyTimeLeft--;
+			updateFlappyTimerDisplay();
+
+			if (flappyTimeLeft <= 0) {
+				isVictory = true;
+				isFlappyRunning = false;
+				clearInterval(gameTimerId);
+				showFlappyModal(true); // Tunjukkan popup kemenangan (Syurga)
+			}
+		}, 1000);
+
+		// Mula Animasi Loop Game
+		flappyLoop();
+	}
+
+	function updateFlappyTimerDisplay() {
+		const mins = Math.floor(flappyTimeLeft / 60);
+		const secs = flappyTimeLeft % 60;
+		document.getElementById('flappy-timer').innerText = 
+			`${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+	}
+
+	function handleFlappyInput(e) {
+		if (e.code === 'Space' && isFlappyRunning) {
+			e.preventDefault();
+			bird.velocity = jump;
+		}
+	}
+
+	function handleFlappyTouch(e) {
+		if (isFlappyRunning) {
+			e.preventDefault();
+			bird.velocity = jump;
+		}
+	}
+
+	let pipeFrameCounter = 0;
+
+	function flappyLoop() {
+		if (!isFlappyRunning && !isVictory) return;
+
+		// --- 1. UPDATE FIZIK ---
+		bird.velocity += gravity;
+		bird.y += bird.velocity;
+
+		// Jana Paip Setiap 100 frame
+		pipeFrameCounter++;
+		if (pipeFrameCounter % 100 === 0 && flappyTimeLeft > 5) {
+			let gap = 130; // Jarak celah paip (mudah ditiup)
+			let topHeight = Math.floor(Math.random() * (canvas.height - gap - 100)) + 40;
+			pipes.push({ x: canvas.width, top: topHeight, bottom: canvas.height - topHeight - gap });
+		}
+
+		// Pergerakan Paip
+		pipes.forEach(p => p.x -= 2);
+		pipes = pipes.filter(p => p.x > -60);
+
+		// Semakan Pelanggaran (Collision)
+		if (bird.y + bird.radius >= canvas.height - 20 || bird.y - bird.radius <= 0) {
+			triggerFlappyGameOver();
+			return;
+		}
+
+		for (let p of pipes) {
+			if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + 50) {
+				if (bird.y - bird.radius < p.top || bird.y + bird.radius > canvas.height - p.bottom) {
+					triggerFlappyGameOver();
+					return;
+				}
+			}
+		}
+
+		// --- 2. LUKIS GRAFIK (RENDER) ---
+		// Latar Belakang (Langit)
+		ctx.fillStyle = "#70c5ce";
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+		// Lukis Awan
+		ctx.fillStyle = "#ffffff";
+		ctx.beginPath();
+		ctx.arc(80, 80, 20, 0, Math.PI * 2);
+		ctx.arc(100, 70, 25, 0, Math.PI * 2);
+		ctx.arc(120, 80, 20, 0, Math.PI * 2);
+		ctx.fill();
+
+		// Lukis Paip Hijau
+		ctx.fillStyle = "#22c55e";
+		ctx.strokeStyle = "#15803d";
+		ctx.lineWidth = 3;
+		pipes.forEach(p => {
+			// Paip Atas
+			ctx.fillRect(p.x, 0, 50, p.top);
+			ctx.strokeRect(p.x, 0, 50, p.top);
+			// Paip Bawah
+			ctx.fillRect(p.x, canvas.height - p.bottom, 50, p.bottom);
+			ctx.strokeRect(p.x, canvas.height - p.bottom, 50, p.bottom);
+		});
+
+		// Lukis Tanah (Ground)
+		ctx.fillStyle = "#ded895";
+		ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+		ctx.fillStyle = "#4ade80";
+		ctx.fillRect(0, canvas.height - 20, canvas.width, 5);
+
+		// Lukis Burung (Kuning/Putih)
+		ctx.fillStyle = "#facc15";
+		ctx.beginPath();
+		ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = "#ca8a04";
+		ctx.stroke();
+
+		// Mata & Paruh Burung
+		ctx.fillStyle = "#000";
+		ctx.beginPath();
+		ctx.arc(bird.x + 5, bird.y - 3, 2, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.fillStyle = "#f97316";
+		ctx.fillRect(bird.x + 8, bird.y, 8, 4);
+
+		if (isFlappyRunning) {
+			gameLoopId = requestAnimationFrame(flappyLoop);
+		}
+	}
+
+	function triggerFlappyGameOver() {
+		isFlappyRunning = false;
+		clearInterval(gameTimerId);
+		cancelAnimationFrame(gameLoopId);
+		showFlappyModal(false); // Tunjukkan popup gagal
+	}
+
+	function showFlappyModal(win) {
+		const modal = document.getElementById('flappy-modal');
+		const icon = document.getElementById('flappy-modal-icon');
+		const title = document.getElementById('flappy-modal-title');
+		const msg = document.getElementById('flappy-modal-msg');
+
+		if (win) {
+			icon.innerText = "🕌✨";
+			title.innerText = "Tahniah! Garis Penamat Syurga!";
+			title.style.color = "#0d9488";
+			msg.innerHTML = "Anda berjaya mendarat di garis penamat Syurga selepas 3 minit penerbangan! 🌟<br><br>Ingin main lagi?";
+		} else {
+			icon.innerText = "💥";
+			title.innerText = "Terlanggar Paip / Terjatuh!";
+			title.style.color = "#ef4444";
+			msg.innerText = "Perjalanan anda terhenti! Ingin cuba lagi?";
+		}
+
+		modal.classList.remove('hidden');
+	}
+
+	function restartFlappyGame() {
+		document.getElementById('flappy-modal').classList.add('hidden');
+		initFlappyState();
+	}
+
+	function closeFlappyModalAndExit() {
+		document.getElementById('flappy-modal').classList.add('hidden');
+		stopFlappyGame();
+		showMainMenu();
+	}
+
+	function stopFlappyGame() {
+		isFlappyRunning = false;
+		clearInterval(gameTimerId);
+		cancelAnimationFrame(gameLoopId);
+	}
 </script>
 
 </body>
