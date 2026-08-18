@@ -477,7 +477,7 @@
 
    <!-- Menu Utama -->
 	<div id="main-menu">
-		<h1>✨ Kuiz Agama Islam v1.01✨</h1>
+		<h1>✨ Kuiz Agama Islam v1.02✨</h1>
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
@@ -1370,6 +1370,30 @@
 	let flappyTimeLeft = 180; // 3 minit = 180 saat
 	let isFlappyRunning = false;
 	let isVictory = false;
+	
+	// Senarai godaan & rintangan dunia
+	const flappyObstacles = [
+		"Tinggal/lewatkan Solat Fardu",
+		"Tinggal Puasa Ramadan tanpa sebab",
+		"Suka Mengeji,komplen memanjang",
+		"Datang Lambat Kerja",
+		"Mengular & Curi Masa",
+		"Lalai Menonton TV",
+		"Asyik Skrol sosmed",
+		"Cakap Bohong / Dusta",
+		"Suka Mengumpat",
+		"Riya' & Unjuk Diri",
+		"Durhaka Ibu Bapa",
+		"Makan Harta Riba",
+		"Bersifat Hasad Dengki",
+		"Sombong & Takabbur",
+		"Pecah Amanah",
+		"Membazir Masa & Harta",
+		"Hafal nama artis,tapi nama nabi tak ingat",
+		"Suka potong Q kat jalan",
+		"Suka buang sampah merata",
+		"Bercakap Lucah / Kotor"
+	];
 
 	function startFlappyGame() {
 		document.getElementById('main-menu').classList.add('hidden');
@@ -1454,14 +1478,23 @@
 		// Jana Paip Setiap 100 frame
 		pipeFrameCounter++;
 		if (pipeFrameCounter % 100 === 0 && flappyTimeLeft > 5) {
-			let gap = 130; // Jarak celah paip (mudah ditiup)
-			let topHeight = Math.floor(Math.random() * (canvas.height - gap - 100)) + 40;
-			pipes.push({ x: canvas.width, top: topHeight, bottom: canvas.height - topHeight - gap });
+			let gap = 140; // Celah paip dipanjangkan sedikit (140px) supaya cukup muat teks
+			let topHeight = Math.floor(Math.random() * (canvas.height - gap - 120)) + 50;
+			
+			// Pilih teks rintangan secara rawak
+			let randomLabel = flappyObstacles[Math.floor(Math.random() * flappyObstacles.length)];
+
+			pipes.push({ 
+				x: canvas.width, 
+				top: topHeight, 
+				bottom: canvas.height - topHeight - gap,
+				label: randomLabel // Simpan label pada tiang ini
+			});
 		}
 
 		// Pergerakan Paip
 		pipes.forEach(p => p.x -= 2);
-		pipes = pipes.filter(p => p.x > -60);
+		pipes = pipes.filter(p => p.x > -80);
 
 		// Semakan Pelanggaran (Collision)
 		if (bird.y + bird.radius >= canvas.height - 20 || bird.y - bird.radius <= 0) {
@@ -1470,7 +1503,7 @@
 		}
 
 		for (let p of pipes) {
-			if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + 50) {
+			if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + 60) {
 				if (bird.y - bird.radius < p.top || bird.y + bird.radius > canvas.height - p.bottom) {
 					triggerFlappyGameOver();
 					return;
@@ -1491,17 +1524,40 @@
 		ctx.arc(120, 80, 20, 0, Math.PI * 2);
 		ctx.fill();
 
-		// Lukis Paip Hijau
-		ctx.fillStyle = "#22c55e";
-		ctx.strokeStyle = "#15803d";
-		ctx.lineWidth = 3;
+		// Lukis Paip Hijau & Teks Godaan
 		pipes.forEach(p => {
+			const pipeWidth = 60; // Lebar paip dibesarkan sedikit (60px) untuk muat teks
+
 			// Paip Atas
-			ctx.fillRect(p.x, 0, 50, p.top);
-			ctx.strokeRect(p.x, 0, 50, p.top);
+			ctx.fillStyle = "#22c55e";
+			ctx.strokeStyle = "#15803d";
+			ctx.lineWidth = 3;
+			ctx.fillRect(p.x, 0, pipeWidth, p.top);
+			ctx.strokeRect(p.x, 0, pipeWidth, p.top);
+
 			// Paip Bawah
-			ctx.fillRect(p.x, canvas.height - p.bottom, 50, p.bottom);
-			ctx.strokeRect(p.x, canvas.height - p.bottom, 50, p.bottom);
+			ctx.fillRect(p.x, canvas.height - p.bottom, pipeWidth, p.bottom);
+			ctx.strokeRect(p.x, canvas.height - p.bottom, pipeWidth, p.bottom);
+
+			// Lukis Teks Godaan/Rintangan (Tegak pada Paip Bawah)
+			ctx.save();
+			ctx.fillStyle = "#ffffff";
+			ctx.font = "bold 11px 'Segoe UI', sans-serif";
+			ctx.textAlign = "center";
+			ctx.shadowColor = "rgba(0,0,0,0.7)";
+			ctx.shadowBlur = 4;
+
+			// Posisikan teks di tengah-tengah Paip Bawah
+			let textX = p.x + (pipeWidth / 2);
+			let textY = canvas.height - (p.bottom / 2);
+
+			// Jika paip terlalu pendek, lukis di paip atas
+			if (p.bottom < 80) {
+				textY = p.top / 2;
+			}
+
+			ctx.fillText(p.label, textX, textY);
+			ctx.restore();
 		});
 
 		// Lukis Tanah (Ground)
@@ -1510,7 +1566,7 @@
 		ctx.fillStyle = "#4ade80";
 		ctx.fillRect(0, canvas.height - 20, canvas.width, 5);
 
-		// Lukis Burung (Kuning/Putih)
+		// Lukis Burung (Kuning)
 		ctx.fillStyle = "#facc15";
 		ctx.beginPath();
 		ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
