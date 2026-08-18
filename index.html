@@ -477,7 +477,7 @@
 
    <!-- Menu Utama -->
 	<div id="main-menu">
-		<h1>✨ Kuiz Agama Islam v1.02✨</h1>
+		<h1>✨ Kuiz Agama Islam v1.03✨</h1>
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
@@ -1539,19 +1539,21 @@
 			ctx.fillRect(p.x, canvas.height - p.bottom, pipeWidth, p.bottom);
 			ctx.strokeRect(p.x, canvas.height - p.bottom, pipeWidth, p.bottom);
 
-			// Lukis Teks Godaan/Rintangan (Tegak pada Paip Bawah)
+			// Lukis Teks Godaan/Rintangan (Teks Hitam & Saiz Lebih Besar)
 			ctx.save();
-			ctx.fillStyle = "#ffffff";
-			ctx.font = "bold 11px 'Segoe UI', sans-serif";
+			ctx.fillStyle = "#000000"; // Tukar warna teks ke Hitam Pekat
+			ctx.font = "bold 13px 'Segoe UI', sans-serif"; // Saiz fon dibesarkan dari 11px ke 13px
 			ctx.textAlign = "center";
-			ctx.shadowColor = "rgba(0,0,0,0.7)";
-			ctx.shadowBlur = 4;
+			
+			// Bayang putih halus di sekeliling teks supaya tetap jelas jika paip berniat gelap
+			ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
+			ctx.shadowBlur = 3;
 
 			// Posisikan teks di tengah-tengah Paip Bawah
 			let textX = p.x + (pipeWidth / 2);
 			let textY = canvas.height - (p.bottom / 2);
 
-			// Jika paip terlalu pendek, lukis di paip atas
+			// Jika paip bawah terlalu pendek, lukis di paip atas
 			if (p.bottom < 80) {
 				textY = p.top / 2;
 			}
