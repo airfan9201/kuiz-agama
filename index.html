@@ -903,12 +903,17 @@
     function showMainMenu() {
         clearInterval(timer);
         clearInterval(wordleStopwatch);
+		stopFlappyGame();
         fetchGlobalLeaderboard(); 
-        document.getElementById('main-menu').classList.remove('hidden');
+        
+		document.getElementById('main-menu').classList.remove('hidden');
+		
         document.getElementById('sub-menu-rukun').classList.add('hidden');
         document.getElementById('quiz-screen').classList.add('hidden');
         document.getElementById('result-screen').classList.add('hidden');
         document.getElementById('wordle-screen').classList.add('hidden');
+		document.getElementById('flappy-screen').classList.add('hidden'); // <-- add
+		document.getElementById('flappy-modal').classList.add('hidden');  // <-- add
     }
 
     function showSubMenu(cat) {
@@ -1562,14 +1567,18 @@
 
 	function closeFlappyModalAndExit() {
 		document.getElementById('flappy-modal').classList.add('hidden');
+		document.getElementById('flappy-screen').classList.add('hidden'); 
 		stopFlappyGame();
 		showMainMenu();
 	}
 
 	function stopFlappyGame() {
 		isFlappyRunning = false;
+		isVictory = false;
 		clearInterval(gameTimerId);
-		cancelAnimationFrame(gameLoopId);
+		if (gameLoopId) {
+			cancelAnimationFrame(gameLoopId);
+		}
 	}
 </script>
 
