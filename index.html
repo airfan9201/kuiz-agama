@@ -477,7 +477,7 @@
 
    <!-- Menu Utama -->
 	<div id="main-menu">
-		<h1>✨ Kuiz Agama Islam [Irf v1.11]✨</h1>
+		<h1>✨ Kuiz Agama Islam [Irf v1.13]✨</h1>
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
@@ -514,8 +514,8 @@
 			
 			<div class="category-card" style="border-color: #f59e0b; background: #fffbeb;" onclick="startFlappyGame()">
 				<div class="card-icon">🕊️</div>
-				<div class="card-title">Kembara Santai</div>
-				<div class="card-desc">Kembara si burung menuju penamat(3 Minit perjalanan).Rekod tidak disimpan.</div>
+				<div class="card-title">Kembara menuju Syurga</div>
+				<div class="card-desc">Kembara si burung menuju penamat(3 Minit perjalanan yang sukar).</div>
 			</div>
 			
 		</div>
@@ -525,9 +525,11 @@
 				<span>🏆 Carta Kedudukan Global</span>
 			</div>
 			<!-- Butang Penukar Tab -->
-			<div style="display: flex; gap: 8px; margin-bottom: 12px;">
-				<button id="tab-quiz-btn" style="flex:1; padding:6px; font-size:0.85rem; background:#0d9488;" onclick="filterLeaderboard('quiz')">Kuiz Utama</button>
-				<button id="tab-wordle-btn" style="flex:1; padding:6px; font-size:0.85rem; background:#6b7280;" onclick="filterLeaderboard('wordle')">Teka Perkataan</button>
+			<!-- Butang Penukar Tab (3 Tab) -->
+			<div style="display: flex; gap: 6px; margin-bottom: 12px;">
+				<button id="tab-quiz-btn" style="flex:1; padding:6px; font-size:0.8rem; background:#0d9488;" onclick="filterLeaderboard('quiz')">Kuiz</button>
+				<button id="tab-wordle-btn" style="flex:1; padding:6px; font-size:0.8rem; background:#6b7280;" onclick="filterLeaderboard('wordle')">Wordle</button>
+				<button id="tab-flappy-btn" style="flex:1; padding:6px; font-size:0.8rem; background:#6b7280;" onclick="filterLeaderboard('flappy')">Kembara</button>
 			</div>
 			<ol id="main-leaderboard" class="leaderboard-list"></ol>
 		</div>
@@ -775,19 +777,27 @@
 		const listContainer = document.getElementById('main-leaderboard');
 		const quizBtn = document.getElementById('tab-quiz-btn');
 		const wordleBtn = document.getElementById('tab-wordle-btn');
+		const flappyBtn = document.getElementById('tab-flappy-btn');
 
 		listContainer.innerHTML = '';
-		
 		let filteredData = [];
+
+		// Reset warna semua butang tab
+		if (quizBtn) quizBtn.style.background = '#6b7280';
+		if (wordleBtn) wordleBtn.style.background = '#6b7280';
+		if (flappyBtn) flappyBtn.style.background = '#6b7280';
+
 		if (type === 'wordle') {
-			quizBtn.style.background = '#6b7280';
-			wordleBtn.style.background = '#8b5cf6';
+			if (wordleBtn) wordleBtn.style.background = '#8b5cf6';
 			filteredData = allLeaderboardData.filter(item => item.kategori === 'Teka Perkataan')
 											 .sort((a, b) => a.masa - b.masa);
+		} else if (type === 'flappy') {
+			if (flappyBtn) flappyBtn.style.background = '#f59e0b'; // Warna oren khas Kembara
+			filteredData = allLeaderboardData.filter(item => item.kategori === 'Kembara Santai')
+											 .sort((a, b) => b.skor - a.skor); // Susun ikut skor tertinggi (bonus kunci)
 		} else {
-			quizBtn.style.background = '#0d9488';
-			wordleBtn.style.background = '#6b7280';
-			filteredData = allLeaderboardData.filter(item => item.kategori !== 'Teka Perkataan');
+			if (quizBtn) quizBtn.style.background = '#0d9488';
+			filteredData = allLeaderboardData.filter(item => item.kategori !== 'Teka Perkataan' && item.kategori !== 'Kembara Santai');
 		}
 
 		if (filteredData.length === 0) {
@@ -803,9 +813,12 @@
 			if (index === 1) medal = '🥈';
 			if (index === 2) medal = '🥉';
 
-			const displayStat = (type === 'wordle')
-				? `⏱️ <strong>${item.masa}s</strong>`
-				: `<strong>${item.skor}/20</strong> <small style="color:#64748b;">(${item.masa}s)</small>`;
+			let displayStat = `<strong>${item.skor} Pts</strong>`;
+			if (type === 'wordle') {
+				displayStat = `⏱️ <strong>${item.masa}s</strong>`;
+			} else if (type === 'quiz') {
+				displayStat = `<strong>${item.skor}/20</strong> <small style="color:#64748b;">(${item.masa}s)</small>`;
+			}
 
 			li.innerHTML = `
 				<div>
