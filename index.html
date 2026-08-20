@@ -477,7 +477,7 @@
 
    <!-- Menu Utama -->
 	<div id="main-menu">
-		<h1>✨ Kuiz Agama Islam [Irf v1.08]✨</h1>
+		<h1>✨ Kuiz Agama Islam [Irf v1.09]✨</h1>
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
@@ -1377,7 +1377,9 @@
 	// VARIABLE REWARD AMAL BAIK (KEBAL)
 	let goldKey = null;          // Objek Kunci Emas {x, y, radius}
 	let isInvincible = false;     // Status kebal
-	let invincibilityTimer = null; // Pemasa 5 saat
+	let invincibilityTimer = null;// Pemasa set timeout
+	let invincibleTimeLeft = 0;   // Baki masa kebal (saat)
+	let invincibleInterval = null;// Pemasa countdown saat
 
 	// Senarai godaan & rintangan dunia
 	const flappyObstacles = [
@@ -1407,11 +1409,23 @@
 
 	function activateGoldKeyPower() {
 		isInvincible = true;
-		if (invincibilityTimer) clearTimeout(invincibilityTimer);
+		invincibleTimeLeft = 5; // Mula countdown 5 saat
 
-		// Kebal selama 5 saat (5000ms)
+		if (invincibilityTimer) clearTimeout(invincibilityTimer);
+		if (invincibleInterval) clearInterval(invincibleInterval);
+
+		// Countdown setiap 1 saat untuk kemaskini teks paparan
+		invincibleInterval = setInterval(() => {
+			invincibleTimeLeft--;
+			if (invincibleTimeLeft <= 0) {
+				clearInterval(invincibleInterval);
+			}
+		}, 1000);
+
+		// Hentikan mod kebal selepas 5 saat
 		invincibilityTimer = setTimeout(() => {
 			isInvincible = false;
+			clearInterval(invincibleInterval);
 		}, 5000);
 	}
 
@@ -1444,7 +1458,9 @@
 		// Reset REWARD & KEBAL
 		goldKey = null;
 		isInvincible = false;
+		invincibleTimeLeft = 0;
 		if (invincibilityTimer) clearTimeout(invincibilityTimer);
+		if (invincibleInterval) clearInterval(invincibleInterval);
 
 		updateFlappyTimerDisplay();
 
@@ -1462,7 +1478,7 @@
 				isVictory = true;
 				isFlappyRunning = false;
 				clearInterval(gameTimerId);
-				showFlappyModal(true); // Tunjukkan popup kemenangan (Syurga)
+				showFlappyModal(true);
 			}
 		}, 1000);
 
@@ -1526,9 +1542,9 @@
 			});
 		}
 
-		// Jana Kunci Emas Secara Rawak (Peluang muncul)
-		if (pipeFrameCounter % 150 === 0 && flappyTimeLeft > 20 && !goldKey) {
-			if (Math.random() < 0.4) {
+		// [PEMBETULAN 1] Jana Kunci Emas Di Tengah-tengah Antara Paip (Jarakan Dari Paip)
+		if (pipeFrameCounter % 100 === 50 && flappyTimeLeft > 20 && !goldKey) {
+			if (Math.random() < 0.35) {
 				goldKey = {
 					x: canvas.width,
 					y: Math.floor(Math.random() * (canvas.height - 180)) + 60,
@@ -1546,7 +1562,7 @@
 				let dist = Math.hypot(bird.x - goldKey.x, bird.y - goldKey.y);
 				if (dist < bird.radius + goldKey.radius) {
 					goldKey = null;
-					activateGoldKeyPower(); // Aktifkan kebal 5 saat
+					activateGoldKeyPower(); // Mula Kuasa Kebal
 				}
 			}
 		}
@@ -1677,7 +1693,7 @@
 		ctx.fillStyle = "#4ade80";
 		ctx.fillRect(0, canvas.height - 20, canvas.width, 5);
 
-		// Lukis Aura Kebal Pada Burung Jika Aktif
+		// [PEMBETULAN 2] Lukis Aura Kebal & Teks Countdown Saat (5s...4s...3s...)
 		if (isInvincible) {
 			ctx.save();
 			ctx.beginPath();
@@ -1688,10 +1704,13 @@
 			ctx.lineWidth = 2;
 			ctx.stroke();
 
+			// Paparkan Baki Masa Kebal
 			ctx.fillStyle = "#d97706";
-			ctx.font = "bold 11px 'Segoe UI', sans-serif";
+			ctx.font = "bold 12px 'Segoe UI', sans-serif";
 			ctx.textAlign = "center";
-			ctx.fillText("AMAL BAIK ✨", bird.x, bird.y - 20);
+			ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
+			ctx.shadowBlur = 4;
+			ctx.fillText(`AMAL BAIK ✨ (${invincibleTimeLeft}s)`, bird.x, bird.y - 20);
 			ctx.restore();
 		}
 
@@ -1762,6 +1781,7 @@
 		isVictory = false;
 		isInvincible = false;
 		if (invincibilityTimer) clearTimeout(invincibilityTimer);
+		if (invincibleInterval) clearInterval(invincibleInterval);
 		clearInterval(gameTimerId);
 		if (gameLoopId) {
 			cancelAnimationFrame(gameLoopId);
@@ -1771,7 +1791,6 @@
 		if (flappyScr) flappyScr.classList.add('hidden');
 		if (flappyMdl) flappyMdl.classList.add('hidden');
 	}
-
 	
 
 </script>
