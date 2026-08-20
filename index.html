@@ -477,7 +477,7 @@
 
    <!-- Menu Utama -->
 	<div id="main-menu">
-		<h1>✨ Kuiz Agama Islam [Irf v1.07]✨</h1>
+		<h1>✨ Kuiz Agama Islam [Irf v1.08]✨</h1>
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
@@ -717,12 +717,6 @@
     let currentAttempt = 0;
     let currentTile = 0;
     let guessRows = [];
-
-
-	//flappy BIRD
-	let goldKey = null;          // Objek Kunci Emas {x, y, radius, collected}
-	let isInvincible = false;     // Status kebal (Amal Baik aktif)
-	let invincibilityTimer = null; // Pemasa 5 saat
 
     document.addEventListener("DOMContentLoaded", () => {
         fetchGlobalLeaderboard();
@@ -1368,7 +1362,8 @@
         }
     }
 	
-	/* =========================================================
+
+/* =========================================================
 	LOGIK MOD BONUS: FLAPPY BIRD (KEMBARA SANTAI)
 	========================================================= */
 	let canvas, ctx;
@@ -1379,6 +1374,11 @@
 	let pipeYOffset = 0;
 	let pipeYDirection = 1;
 	
+	// VARIABLE REWARD AMAL BAIK (KEBAL)
+	let goldKey = null;          // Objek Kunci Emas {x, y, radius}
+	let isInvincible = false;     // Status kebal
+	let invincibilityTimer = null; // Pemasa 5 saat
+
 	// Senarai godaan & rintangan dunia
 	const flappyObstacles = [
 		"Tinggal/lewatkan Solat Fardu",
@@ -1404,6 +1404,16 @@
 		"Kedekut pahit",
 		"Bercakap Lucah / Kotor"
 	];
+
+	function activateGoldKeyPower() {
+		isInvincible = true;
+		if (invincibilityTimer) clearTimeout(invincibilityTimer);
+
+		// Kebal selama 5 saat (5000ms)
+		invincibilityTimer = setTimeout(() => {
+			isInvincible = false;
+		}, 5000);
+	}
 
 	function startFlappyGame() {
 		document.getElementById('main-menu').classList.add('hidden');
@@ -1431,10 +1441,10 @@
 		isFlappyRunning = true;
 		isVictory = false;
 		
-		//reward
+		// Reset REWARD & KEBAL
 		goldKey = null;
 		isInvincible = false;
-		clearTimeout(invincibilityTimer);
+		if (invincibilityTimer) clearTimeout(invincibilityTimer);
 
 		updateFlappyTimerDisplay();
 
@@ -1490,11 +1500,11 @@
 		bird.velocity += gravity;
 		bird.y += bird.velocity;
 
-		// Laraskan offset pergerakan paip ke atas & ke bawah (bila baki masa <= 60 saat / 1 minit terakhir)
+		// Laraskan offset pergerakan paip ke atas & ke bawah (bila baki masa <= 60 saat)
 		if (flappyTimeLeft <= 60) {
 			pipeYOffset += 0.8 * pipeYDirection;
 			if (pipeYOffset > 35 || pipeYOffset < -35) {
-				pipeYDirection *= -1; // Tukar arah pergerakan
+				pipeYDirection *= -1;
 			}
 		} else {
 			pipeYOffset = 0;
@@ -1512,32 +1522,31 @@
 				top: topHeight, 
 				bottom: canvas.height - topHeight - gap,
 				label: randomLabel,
-				// Paip bergerak hanya pada 1 minit terakhir
 				isMoving: flappyTimeLeft <= 60 
 			});
 		}
 
-		// [TAMBAHAN] Jana Kunci Emas Secara Rawak (30% Peluang Setiap 150 Frame)
+		// Jana Kunci Emas Secara Rawak (Peluang muncul)
 		if (pipeFrameCounter % 150 === 0 && flappyTimeLeft > 20 && !goldKey) {
-			if (Math.random() < 0.3) {
+			if (Math.random() < 0.4) {
 				goldKey = {
 					x: canvas.width,
 					y: Math.floor(Math.random() * (canvas.height - 180)) + 60,
-					radius: 12
+					radius: 14
 				};
 			}
 		}
 
-		// [TAMBAHAN] Pergerakan & Semakan Ambil Kunci Emas
+		// Pergerakan & Semakan Pengambilan Kunci Emas
 		if (goldKey) {
-			goldKey.x -= 2; // Bergerak selari dengan paip
-			if (goldKey.x < -30) goldKey = null; // Luput jika keluar skrin
+			goldKey.x -= 2; 
+			if (goldKey.x < -30) goldKey = null; 
 
 			if (goldKey) {
 				let dist = Math.hypot(bird.x - goldKey.x, bird.y - goldKey.y);
 				if (dist < bird.radius + goldKey.radius) {
 					goldKey = null;
-					activateGoldKeyPower(); // Aktifkan Kuasa Amal Baik 5 Saat
+					activateGoldKeyPower(); // Aktifkan kebal 5 saat
 				}
 			}
 		}
@@ -1546,13 +1555,13 @@
 		pipes.forEach(p => p.x -= 2);
 		pipes = pipes.filter(p => p.x > -80);
 
-		// Semakan Pelanggaran (Collision) Dengan Tanah/Siling
+		// Semakan Pelanggaran Dengan Tanah/Siling
 		if (bird.y + bird.radius >= canvas.height - 20 || bird.y - bird.radius <= 0) {
 			triggerFlappyGameOver();
 			return;
 		}
 
-		// Semakan Pelanggaran Dengan Paip (Dikemas kini untuk Mod Kebal/Amal Baik)
+		// Semakan Pelanggaran Dengan Paip
 		for (let i = pipes.length - 1; i >= 0; i--) {
 			let p = pipes[i];
 			let currentTop = p.isMoving ? p.top + pipeYOffset : p.top;
@@ -1560,9 +1569,9 @@
 
 			if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + 60) {
 				if (bird.y - bird.radius < currentTop || bird.y + bird.radius > canvas.height - currentBottom) {
-					// JIKA KUASA AMAL BAIK AKTIF -> PAIP HANCUR & TERUSKAN!
+					// JIKA MOD KEBAL AKTIF -> HANCURKAN PAIP SAHAJA!
 					if (isInvincible) {
-						pipes.splice(i, 1); 
+						pipes.splice(i, 1);
 					} else {
 						triggerFlappyGameOver();
 						return;
@@ -1576,7 +1585,7 @@
 		ctx.fillStyle = "#70c5ce";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-		// Lukis Awan Latar Belakang
+		// Lukis Awan
 		ctx.fillStyle = "#ffffff";
 		ctx.beginPath();
 		ctx.arc(80, 80, 20, 0, Math.PI * 2);
@@ -1601,7 +1610,7 @@
 			ctx.fillRect(p.x, canvas.height - drawBottom, pipeWidth, drawBottom);
 			ctx.strokeRect(p.x, canvas.height - drawBottom, pipeWidth, drawBottom);
 
-			// Lukis Teks Godaan (Hitam & Jelas)
+			// Teks Godaan
 			ctx.save();
 			ctx.fillStyle = "#000000";
 			ctx.font = "bold 13px 'Segoe UI', sans-serif";
@@ -1620,16 +1629,16 @@
 			ctx.restore();
 		});
 
-		// [TAMBAHAN] Lukis Kunci Emas Jika Wujud
+		// Lukis Kunci Emas
 		if (goldKey) {
 			ctx.save();
-			ctx.font = "20px 'Segoe UI'";
+			ctx.font = "22px 'Segoe UI'";
 			ctx.textAlign = "center";
 			ctx.fillText("🔑", goldKey.x, goldKey.y + 7);
 			ctx.restore();
 		}
 
-		// --- NO 3: VISUAL PINTU SYURGA (15 Saat Terakhir) ---
+		// VISUAL PINTU SYURGA (15 Saat Terakhir)
 		if (flappyTimeLeft <= 15) {
 			let gateX = (flappyTimeLeft / 15) * (canvas.width + 100) - 80;
 
@@ -1662,13 +1671,13 @@
 			ctx.restore();
 		}
 
-		// Lukis Tanah (Ground)
+		// Lukis Tanah
 		ctx.fillStyle = "#ded895";
 		ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
 		ctx.fillStyle = "#4ade80";
 		ctx.fillRect(0, canvas.height - 20, canvas.width, 5);
 
-		// [TAMBAHAN] Lukis Aura Kebal Pada Burung Jika Kuasa Aktif
+		// Lukis Aura Kebal Pada Burung Jika Aktif
 		if (isInvincible) {
 			ctx.save();
 			ctx.beginPath();
@@ -1686,7 +1695,7 @@
 			ctx.restore();
 		}
 
-		// Lukis Burung (Kuning)
+		// Lukis Burung
 		ctx.fillStyle = "#facc15";
 		ctx.beginPath();
 		ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
@@ -1712,7 +1721,7 @@
 		isFlappyRunning = false;
 		clearInterval(gameTimerId);
 		cancelAnimationFrame(gameLoopId);
-		showFlappyModal(false); // Tunjukkan popup gagal
+		showFlappyModal(false);
 	}
 
 	function showFlappyModal(win) {
@@ -1751,26 +1760,20 @@
 	function stopFlappyGame() {
 		isFlappyRunning = false;
 		isVictory = false;
+		isInvincible = false;
+		if (invincibilityTimer) clearTimeout(invincibilityTimer);
 		clearInterval(gameTimerId);
 		if (gameLoopId) {
 			cancelAnimationFrame(gameLoopId);
 		}
-		// Sembunyikan terus skrin & modal flappy setiap kali game dihentikan
 		const flappyScr = document.getElementById('flappy-screen');
 		const flappyMdl = document.getElementById('flappy-modal');
 		if (flappyScr) flappyScr.classList.add('hidden');
 		if (flappyMdl) flappyMdl.classList.add('hidden');
 	}
-	
-	function activateGoldKeyPower() {
-		isInvincible = true;
-		clearTimeout(invincibilityTimer);
 
-		// Kebal selama 5 saat (5000ms)
-		invincibilityTimer = setTimeout(() => {
-			isInvincible = false;
-		}, 5000);
-	}
+	
+
 </script>
 
 </body>
