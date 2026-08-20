@@ -477,7 +477,7 @@
 
    <!-- Menu Utama -->
 	<div id="main-menu">
-		<h1>✨ Kuiz Agama Islam [Irf v1.10]✨</h1>
+		<h1>✨ Kuiz Agama Islam [Irf v1.11]✨</h1>
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
@@ -626,6 +626,7 @@
 		<button class="back-btn" style="width:100%; margin-top: 10px;" onclick="stopFlappyGame(); showMainMenu();">⬅️ Menu Utama</button>
 	</div>
 
+	<!-- MODAL POPUP FLAPPY (GAME OVER / WIN) -->
 	<div id="flappy-modal" class="modal-overlay hidden">
 		<div class="modal-card">
 			<div class="modal-header">
@@ -633,10 +634,20 @@
 				<h3 id="flappy-modal-title">Terlanggar Paip!</h3>
 			</div>
 			<div class="modal-body">
-				<p id="flappy-modal-msg" style="color:#64748b; margin-bottom:15px;">Adakah anda ingin cuba lagi?</p>
+				<p id="flappy-modal-msg" style="color:#64748b; margin-bottom:15px;"></p>
+				
+				<!-- Borang Simpan Skor (Hanya Muncul Bila Menang / Tiba Di Syurga) -->
+				<div id="flappy-save-box" class="save-score-form hidden" style="margin-bottom:15px;">
+					<p style="font-size: 0.85rem; margin-bottom: 8px; font-weight: 600; color:#0d9488;">
+						🏆 Kelayakan Leaderboard! Masukkan nama anda:
+					</p>
+					<input type="text" id="flappy-player-name" placeholder="Nama anda..." maxlength="15" style="width:55%;">
+					<button style="padding: 10px 12px; font-size:0.9rem;" onclick="saveFlappyScore()">Simpan</button>
+				</div>
 			</div>
-			<button class="btn-primary-start" onclick="restartFlappyGame()">🔄 Ya, Cuba Lagi!</button>
-			<button class="back-btn" style="width:100%; margin-top:8px;" onclick="closeFlappyModalAndExit()">❌ Tidak, Ke Menu Utama</button>
+			
+			<button id="flappy-retry-btn" class="btn-primary-start" onclick="restartFlappyGame()">🔄 Ya, Cuba Lagi!</button>
+			<button class="back-btn" style="width:100%; margin-top:8px;" onclick="closeFlappyModalAndExit()">❌ Ke Menu Utama</button>
 		</div>
 	</div>
 
@@ -1373,6 +1384,7 @@
 	let isVictory = false;
 	let pipeYOffset = 0;
 	let pipeYDirection = 1;
+	let keysCollected = 0; 
 	
 	// VARIABLE REWARD AMAL BAIK (KEBAL)
 	let goldKey = null;          // Objek Kunci Emas {x, y, radius}
@@ -1454,6 +1466,7 @@
 		flappyTimeLeft = 180; // Reset ke 3 minit
 		isFlappyRunning = true;
 		isVictory = false;
+		keysCollected = 0; // Reset kunci awal permainan
 		
 		// Reset REWARD & KEBAL
 		goldKey = null;
@@ -1543,8 +1556,8 @@
 		}
 
 		// [PEMBETULAN 1] Jana Kunci Emas Di Tengah-tengah Antara Paip (Jarakan Dari Paip)
-		if (pipeFrameCounter % 100 === 50 && flappyTimeLeft > 20 && !goldKey) {
-			if (Math.random() < 0.35) {
+		if (pipeFrameCounter % 80 === 40 && flappyTimeLeft > 18 && !goldKey) {
+			if (Math.random() < 0.65) {
 				goldKey = {
 					x: canvas.width,
 					y: Math.floor(Math.random() * (canvas.height - 180)) + 60,
@@ -1562,6 +1575,7 @@
 				let dist = Math.hypot(bird.x - goldKey.x, bird.y - goldKey.y);
 				if (dist < bird.radius + goldKey.radius) {
 					goldKey = null;
+					keysCollected++;
 					activateGoldKeyPower(); // Mula Kuasa Kebal
 				}
 			}
@@ -1773,20 +1787,68 @@
 		const icon = document.getElementById('flappy-modal-icon');
 		const title = document.getElementById('flappy-modal-title');
 		const msg = document.getElementById('flappy-modal-msg');
+		const saveBox = document.getElementById('flappy-save-box');
+		const retryBtn = document.getElementById('flappy-retry-btn');
 
 		if (win) {
 			icon.innerText = "🕌✨";
 			title.innerText = "Tahniah! Garis Penamat Syurga!";
 			title.style.color = "#0d9488";
-			msg.innerHTML = "Anda berjaya mendarat di garis penamat Syurga selepas 3 minit penerbangan! 🌟<br><br>Ingin main lagi?";
+			
+			// Kira Skor: 180s Masa Terpantas + (Jumlah Kunci x 100 Markah Bonus)
+			let totalFlappyScore = 180 + (keysCollected * 100);
+			
+			msg.innerHTML = `Anda berjaya menamatkan perjalanan 3 Minit menuju Syurga! 🌟<br><br>` +
+							`🔑 Kunci Emas Dikumpul: <strong>${keysCollected}</strong><br>` +
+							`🏅 Markah Kelayakan: <strong>${totalFlappyScore} Pts</strong>`;
+			
+			saveBox.classList.remove('hidden'); // Tunjukkan borang simpan
+			retryBtn.innerText = "🔄 Main Lagi";
 		} else {
 			icon.innerText = "💥";
 			title.innerText = "Terlanggar Paip / Terjatuh!";
 			title.style.color = "#ef4444";
-			msg.innerText = "Perjalanan anda terhenti! Ingin cuba lagi?";
+			msg.innerText = "Perjalanan anda terhenti di pertengahan jalan! Rekod tidak disimpan. Ingin cuba lagi?";
+			
+			saveBox.classList.add('hidden'); // Sembunyikan borang simpan jika gagal
+			retryBtn.innerText = "🔄 Ya, Cuba Lagi!";
 		}
 
 		modal.classList.remove('hidden');
+	}
+
+	async function saveFlappyScore() {
+		const rawName = document.getElementById('flappy-player-name').value.trim();
+		if (!rawName) { alert("Sila masukkan nama anda!"); return; }
+
+		const deviceId = getDeviceId();
+		const formattedUsername = `${rawName}_${deviceId}`;
+		let totalFlappyScore = 180 + (keysCollected * 100);
+
+		try {
+			const payload = {
+				nama: formattedUsername,
+				skor: totalFlappyScore, // Skor dikira berdasarkan kunci + masa
+				masa: 180,              // Tepat 180 saat (3 minit)
+				kategori: "Kembara Santai"
+			};
+
+			const res = await fetch('/api/leaderboard', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+
+			if (res.ok) {
+				document.getElementById('flappy-save-box').classList.add('hidden');
+				alert("Rekod Kembara Santai anda berjaya disimpan dalam Carta Kedudukan Global! 🎉");
+				fetchGlobalLeaderboard(); 
+			} else {
+				alert("Gagal menyimpan skor.");
+			}
+		} catch (err) {
+			alert("Ralat sambungan semasa menyimpan skor.");
+		}
 	}
 
 	function restartFlappyGame() {
