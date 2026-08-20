@@ -477,7 +477,7 @@
 
    <!-- Menu Utama -->
 	<div id="main-menu">
-		<h1>✨ Kuiz Agama Islam [Irf v1.09]✨</h1>
+		<h1>✨ Kuiz Agama Islam [Irf v1.10]✨</h1>
 		<p style="color: #64748b; font-weight: 600;">Jom uji pengetahuan Agama anda dan atasi rekod rakan-rakan anda! 🚀</p>
 		
 		<div class="category-grid">
@@ -1687,11 +1687,36 @@
 			ctx.restore();
 		}
 
-		// Lukis Tanah
-		ctx.fillStyle = "#ded895";
-		ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
-		ctx.fillStyle = "#4ade80";
-		ctx.fillRect(0, canvas.height - 20, canvas.width, 5);
+		// --- LUKIS LANDASAN KEMAJUAN (180M -> 0M) DI LANTAI ---
+			// 1. Dasar Tanah
+			ctx.fillStyle = "#ded895";
+			ctx.fillRect(0, canvas.height - 25, canvas.width, 25);
+			
+			// 2. Rumput Atas
+			ctx.fillStyle = "#4ade80";
+			ctx.fillRect(0, canvas.height - 25, canvas.width, 4);
+
+			// 3. Garis-garis Pembaris Landasan (Bergerak mengikut kelajuan paip)
+			ctx.strokeStyle = "#ca8a04";
+			ctx.lineWidth = 1.5;
+			let trackOffset = (180 - flappyTimeLeft) * 10 % 20; // Kesan pergerakan garisan landasan
+			for (let x = -trackOffset; x < canvas.width; x += 20) {
+				ctx.beginPath();
+				ctx.moveTo(x, canvas.height - 21);
+				ctx.lineTo(x, canvas.height - 15);
+				ctx.stroke();
+			}
+
+			// 4. Paparan Teks Landasan (Masa / Jarak Penamat)
+			ctx.save();
+			ctx.fillStyle = "#1e293b";
+			ctx.font = "bold 11px 'Segoe UI', sans-serif";
+			ctx.textAlign = "center";
+			
+			// Teks penanda di sebelah kiri & kanan lantai
+			let currentDistance = flappyTimeLeft; // 180 ke 0 saat/meter
+			ctx.fillText(`🚩 Baki Jarak: ${currentDistance}m`, canvas.width / 2, canvas.height - 6);
+			ctx.restore();
 
 		// [PEMBETULAN 2] Lukis Aura Kebal & Teks Countdown Saat (5s...4s...3s...)
 		if (isInvincible) {
