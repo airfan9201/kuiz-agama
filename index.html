@@ -718,6 +718,12 @@
     let currentTile = 0;
     let guessRows = [];
 
+
+	//flappy BIRD
+	let goldKey = null;          // Objek Kunci Emas {x, y, radius, collected}
+	let isInvincible = false;     // Status kebal (Amal Baik aktif)
+	let invincibilityTimer = null; // Pemasa 5 saat
+
     document.addEventListener("DOMContentLoaded", () => {
         fetchGlobalLeaderboard();
         setupVirtualKeyboard();
@@ -1424,6 +1430,11 @@
 		flappyTimeLeft = 180; // Reset ke 3 minit
 		isFlappyRunning = true;
 		isVictory = false;
+		
+		//reward
+		goldKey = null;
+		isInvincible = false;
+		clearTimeout(invincibilityTimer);
 
 		updateFlappyTimerDisplay();
 
@@ -1506,6 +1517,31 @@
 			});
 		}
 
+		// [TAMBAHAN] Jana Kunci Emas Secara Rawak (30% Peluang Setiap 150 Frame)
+		if (pipeFrameCounter % 150 === 0 && flappyTimeLeft > 20 && !goldKey) {
+			if (Math.random() < 0.3) {
+				goldKey = {
+					x: canvas.width,
+					y: Math.floor(Math.random() * (canvas.height - 180)) + 60,
+					radius: 12
+				};
+			}
+		}
+
+		// [TAMBAHAN] Pergerakan & Semakan Ambil Kunci Emas
+		if (goldKey) {
+			goldKey.x -= 2; // Bergerak selari dengan paip
+			if (goldKey.x < -30) goldKey = null; // Luput jika keluar skrin
+
+			if (goldKey) {
+				let dist = Math.hypot(bird.x - goldKey.x, bird.y - goldKey.y);
+				if (dist < bird.radius + goldKey.radius) {
+					goldKey = null;
+					activateGoldKeyPower(); // Aktifkan Kuasa Amal Baik 5 Saat
+				}
+			}
+		}
+
 		// Pergerakan Paip Kedepan
 		pipes.forEach(p => p.x -= 2);
 		pipes = pipes.filter(p => p.x > -80);
@@ -1516,15 +1552,21 @@
 			return;
 		}
 
-		// Semakan Pelanggaran Dengan Paip
-		for (let p of pipes) {
+		// Semakan Pelanggaran Dengan Paip (Dikemas kini untuk Mod Kebal/Amal Baik)
+		for (let i = pipes.length - 1; i >= 0; i--) {
+			let p = pipes[i];
 			let currentTop = p.isMoving ? p.top + pipeYOffset : p.top;
 			let currentBottom = p.isMoving ? p.bottom - pipeYOffset : p.bottom;
 
 			if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + 60) {
 				if (bird.y - bird.radius < currentTop || bird.y + bird.radius > canvas.height - currentBottom) {
-					triggerFlappyGameOver();
-					return;
+					// JIKA KUASA AMAL BAIK AKTIF -> PAIP HANCUR & TERUSKAN!
+					if (isInvincible) {
+						pipes.splice(i, 1); 
+					} else {
+						triggerFlappyGameOver();
+						return;
+					}
 				}
 			}
 		}
@@ -1578,38 +1620,41 @@
 			ctx.restore();
 		});
 
+		// [TAMBAHAN] Lukis Kunci Emas Jika Wujud
+		if (goldKey) {
+			ctx.save();
+			ctx.font = "20px 'Segoe UI'";
+			ctx.textAlign = "center";
+			ctx.fillText("🔑", goldKey.x, goldKey.y + 7);
+			ctx.restore();
+		}
+
 		// --- NO 3: VISUAL PINTU SYURGA (15 Saat Terakhir) ---
 		if (flappyTimeLeft <= 15) {
-			// Pengiraan kedudukan Pintu Syurga menghampiri dari kanan
 			let gateX = (flappyTimeLeft / 15) * (canvas.width + 100) - 80;
 
 			ctx.save();
-			// Cahaya Emas Belakang Pintu
 			let gradient = ctx.createRadialGradient(gateX + 40, canvas.height / 2, 10, gateX + 40, canvas.height / 2, 120);
 			gradient.addColorStop(0, 'rgba(254, 240, 138, 0.9)');
 			gradient.addColorStop(1, 'rgba(254, 240, 138, 0)');
 			ctx.fillStyle = gradient;
 			ctx.fillRect(gateX - 100, 0, 300, canvas.height);
 
-			// Lukis Tiang Pintu Syurga (Putih & Emas)
 			ctx.fillStyle = "#ffffff";
 			ctx.strokeStyle = "#f59e0b";
 			ctx.lineWidth = 4;
 
-			// Tiang Kiri & Kanan Pintu
 			ctx.fillRect(gateX, 60, 20, canvas.height - 80);
 			ctx.strokeRect(gateX, 60, 20, canvas.height - 80);
 			ctx.fillRect(gateX + 70, 60, 20, canvas.height - 80);
 			ctx.strokeRect(gateX + 70, 60, 20, canvas.height - 80);
 
-			// Gerbang Atas (Bentuk Kubah)
 			ctx.beginPath();
 			ctx.arc(gateX + 45, 65, 45, Math.PI, 0);
 			ctx.fillStyle = "#fef08a";
 			ctx.fill();
 			ctx.stroke();
 
-			// Teks "SYURGA"
 			ctx.fillStyle = "#78350f";
 			ctx.font = "bold 14px 'Segoe UI', sans-serif";
 			ctx.textAlign = "center";
@@ -1622,6 +1667,24 @@
 		ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
 		ctx.fillStyle = "#4ade80";
 		ctx.fillRect(0, canvas.height - 20, canvas.width, 5);
+
+		// [TAMBAHAN] Lukis Aura Kebal Pada Burung Jika Kuasa Aktif
+		if (isInvincible) {
+			ctx.save();
+			ctx.beginPath();
+			ctx.arc(bird.x, bird.y, bird.radius + 8, 0, Math.PI * 2);
+			ctx.fillStyle = "rgba(251, 191, 36, 0.4)";
+			ctx.fill();
+			ctx.strokeStyle = "#f59e0b";
+			ctx.lineWidth = 2;
+			ctx.stroke();
+
+			ctx.fillStyle = "#d97706";
+			ctx.font = "bold 11px 'Segoe UI', sans-serif";
+			ctx.textAlign = "center";
+			ctx.fillText("AMAL BAIK ✨", bird.x, bird.y - 20);
+			ctx.restore();
+		}
 
 		// Lukis Burung (Kuning)
 		ctx.fillStyle = "#facc15";
@@ -1697,6 +1760,16 @@
 		const flappyMdl = document.getElementById('flappy-modal');
 		if (flappyScr) flappyScr.classList.add('hidden');
 		if (flappyMdl) flappyMdl.classList.add('hidden');
+	}
+	
+	function activateGoldKeyPower() {
+		isInvincible = true;
+		clearTimeout(invincibilityTimer);
+
+		// Kebal selama 5 saat (5000ms)
+		invincibilityTimer = setTimeout(() => {
+			isInvincible = false;
+		}, 5000);
 	}
 </script>
 
